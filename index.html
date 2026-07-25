@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voice Governor — prototype</title>
+</head>
+<body>
+<style>
+:root{
+  --paper:#F3F5F4; --panel:#FBFCFB; --ink:#182220; --ink2:#44524E; --ink3:#71807B;
+  --line:#D6DEDB; --accent:#0E6B5C; --accent-soft:#E2EEEB;
+  --crit:#B3261E; --crit-soft:#F7E4E2; --warn:#8A6100; --warn-soft:#F4EBD6; --pass:#1E7A46; --pass-soft:#E0EFE5;
+  --mark-crit:rgba(179,38,30,.16); --mark-warn:rgba(154,106,0,.16);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --paper:#141A18; --panel:#1C2422; --ink:#E7ECEA; --ink2:#AFBCB8; --ink3:#7C8A85;
+    --line:#2E3A36; --accent:#4FBBA4; --accent-soft:#1E332E;
+    --crit:#E88C85; --crit-soft:#3A2321; --warn:#D9B25C; --warn-soft:#362D18; --pass:#6FC791; --pass-soft:#1D3226;
+    --mark-crit:rgba(232,140,133,.22); --mark-warn:rgba(217,178,92,.20);
+  }
+}
+:root[data-theme="light"]{
+  --paper:#F3F5F4; --panel:#FBFCFB; --ink:#182220; --ink2:#44524E; --ink3:#71807B;
+  --line:#D6DEDB; --accent:#0E6B5C; --accent-soft:#E2EEEB;
+  --crit:#B3261E; --crit-soft:#F7E4E2; --warn:#8A6100; --warn-soft:#F4EBD6; --pass:#1E7A46; --pass-soft:#E0EFE5;
+  --mark-crit:rgba(179,38,30,.16); --mark-warn:rgba(154,106,0,.16);
+}
+:root[data-theme="dark"]{
+  --paper:#141A18; --panel:#1C2422; --ink:#E7ECEA; --ink2:#AFBCB8; --ink3:#7C8A85;
+  --line:#2E3A36; --accent:#4FBBA4; --accent-soft:#1E332E;
+  --crit:#E88C85; --crit-soft:#3A2321; --warn:#D9B25C; --warn-soft:#362D18; --pass:#6FC791; --pass-soft:#1D3226;
+  --mark-crit:rgba(232,140,133,.22); --mark-warn:rgba(217,178,92,.20);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:16px/1.55 "Avenir Next","Segoe UI",system-ui,sans-serif;}
+.serif{font-family:Georgia,"Times New Roman",serif}
+.mono{font-family:ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums}
+header{display:flex;align-items:baseline;gap:14px;padding:20px 28px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+header h1{font-family:Georgia,serif;font-size:22px;margin:0;font-weight:600;letter-spacing:-.01em}
+header .tag{font-family:ui-monospace,Consolas,monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--accent);border:1px solid var(--accent);padding:2px 8px;border-radius:2px}
+header .brand{margin-left:auto;font-size:13px;color:var(--ink2)}
+header .brand b{color:var(--ink)}
+main{display:grid;grid-template-columns:minmax(320px,1.25fr) minmax(300px,1fr);gap:0;min-height:calc(100vh - 70px)}
+@media(max-width:880px){main{grid-template-columns:1fr}}
+.pane{padding:22px 28px}
+.pane.left{border-right:1px solid var(--line)}
+@media(max-width:880px){.pane.left{border-right:none;border-bottom:1px solid var(--line)}}
+.pane h2{font-family:ui-monospace,Consolas,monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink3);font-weight:600;margin:0 0 10px}
+textarea{width:100%;min-height:220px;resize:vertical;background:var(--panel);color:var(--ink);
+  border:1px solid var(--line);border-radius:3px;padding:14px;font:16px/1.6 inherit;font-family:inherit}
+textarea:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.btnrow{display:flex;gap:8px;margin:10px 0 18px;flex-wrap:wrap}
+button{font:600 13px/1 inherit;padding:9px 14px;border-radius:3px;border:1px solid var(--line);
+  background:var(--panel);color:var(--ink);cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] button.primary, body button.primary{color:#fff}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.markup{background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:16px;line-height:1.75;min-height:80px;white-space:pre-wrap}
+.markup:empty::before{content:"Marked-up copy appears here after review.";color:var(--ink3)}
+mark{border-radius:2px;padding:0 2px;color:inherit;cursor:help}
+mark.crit{background:var(--mark-crit);border-bottom:2px solid var(--crit)}
+mark.warn{background:var(--mark-warn);border-bottom:2px dotted var(--warn)}
+.scorehead{display:flex;align-items:center;gap:20px;margin-bottom:18px}
+.scorenum{font-family:Georgia,serif;font-size:64px;line-height:1;font-weight:600;min-width:110px}
+.scorenum small{font-size:20px;color:var(--ink3);font-weight:400}
+.verdict{font-size:13px}
+.verdict .pill{display:inline-block;font-family:ui-monospace,Consolas,monospace;font-size:11px;letter-spacing:.08em;
+  padding:3px 10px;border-radius:2px;text-transform:uppercase;font-weight:600}
+.pill.pass{background:var(--pass-soft);color:var(--pass)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.crit{background:var(--crit-soft);color:var(--crit)}
+.cats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.cat{background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:10px 12px}
+.cat .n{font-family:ui-monospace,Consolas,monospace;font-size:18px;font-weight:600}
+.cat .l{font-size:12px;color:var(--ink2)}
+.bar{height:4px;background:var(--line);border-radius:2px;margin-top:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+.vlist{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
+.v{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:3px;padding:10px 12px;font-size:14px}
+.v.crit{border-left-color:var(--crit)}
+.v .rule{font-family:ui-monospace,Consolas,monospace;font-size:11px;letter-spacing:.06em;color:var(--ink3);text-transform:uppercase}
+.v .fix{color:var(--ink2);font-size:13px;margin-top:3px}
+.v .fix b{color:var(--accent)}
+section.block{margin-top:26px}
+.sim{background:var(--panel);border:1px dashed var(--accent);border-radius:3px;padding:14px 16px;font-size:14px}
+.simtag{display:inline-block;font-family:ui-monospace,Consolas,monospace;font-size:10px;letter-spacing:.1em;
+  background:var(--accent-soft);color:var(--accent);padding:2px 8px;border-radius:2px;margin-bottom:8px;text-transform:uppercase;font-weight:600}
+details.rules{margin-top:26px;border-top:1px solid var(--line);padding-top:14px}
+details.rules summary{cursor:pointer;font-family:ui-monospace,Consolas,monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.chip{font-family:ui-monospace,Consolas,monospace;font-size:12px;background:var(--crit-soft);color:var(--crit);
+  padding:3px 8px;border-radius:2px;display:inline-flex;align-items:center;gap:6px}
+.chip button{all:unset;cursor:pointer;font-weight:700;padding:0 2px}
+.addrow{display:flex;gap:8px;margin-top:8px}
+.addrow input{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:8px 10px;color:var(--ink);font:14px inherit;font-family:inherit}
+.addrow input:focus{outline:2px solid var(--accent)}
+.foot{padding:14px 28px;border-top:1px solid var(--line);font-size:12px;color:var(--ink3)}
+.empty{color:var(--ink3);font-size:14px}
+</style>
+
+<header>
+  <h1 class="serif">Voice Governor</h1>
+  <span class="tag">Prototype</span>
+  <span class="brand">Ruleset: <b>Meridian Payments</b> · demo brand, editable below</span>
+</header>
+
+<main>
+<div class="pane left">
+  <h2>Content under review</h2>
+  <textarea id="input" aria-label="Content to review" placeholder="Paste a draft — an email, a landing-page section, a social post — and press Review."></textarea>
+  <div class="btnrow">
+    <button class="primary" id="run">Review</button>
+    <button id="sample">Load sample draft</button>
+    <button id="clear">Clear</button>
+  </div>
+  <h2>Marked-up copy</h2>
+  <div class="markup" id="markup"></div>
+
+  <details class="rules">
+    <summary>The ruleset (editable)</summary>
+    <p style="font-size:13px;color:var(--ink2)">Banned vocabulary. Hover a chip's × to remove a term, or add your own. Deterministic checks (sentence length, unevidenced superlatives, exclamation marks, passive voice, reading ease) are fixed in this prototype.</p>
+    <div class="chips" id="chips"></div>
+    <div class="addrow">
+      <input id="newterm" aria-label="Add banned term" placeholder="Add a banned term…">
+      <button id="addterm">Add</button>
+    </div>
+  </details>
+</div>
+
+<div class="pane">
+  <h2>Governance report</h2>
+  <div id="report"><p class="empty">No review yet. Load the sample draft to see the tool working.</p></div>
+</div>
+</main>
+
+<div class="foot">Rules layer runs live in the browser. The tone review and rewrite are <b>simulated</b> — in production they'd be a model call against the same ruleset. Regulatory checks reference the CAP Code, CMA Green Claims Code, DMCC Act 2024 and FCA rules as pattern triggers only — <b>this is a screening prototype, not legal advice</b>. A production build would route regulatory findings to a qualified reviewer.</div>
+
+<script>
+const SAMPLE = `We're passionate about delivering world-class payment solutions that leverage cutting-edge AI to transform your business!
+
+Our seamless platform empowers teams to unlock incredible growth. Thousands of customers trust Meridian because we offer the most robust and innovative infrastructure in the industry, which is why leading enterprises across a wide range of verticals have chosen to partner with us on their digital transformation journey.
+
+Sign up today — this offer won't last! Get started completely free with guaranteed returns and zero risk. Our eco-friendly, carbon neutral platform is 100% secure.
+
+Settlement takes 2 days.`;
+
+// Regulatory rules — pattern, severity, rule code, source, message, fix
+const REG_RULES = [
+  {re:/\b(guaranteed returns?|guaranteed (profit|income|growth))\b/gi, sev:"crit", rule:"REG-01 · financial promotion",
+   src:"FCA COBS 4 / s.21 FSMA", msg:"Promises a financial outcome.",
+   fix:"Financial promotions cannot guarantee returns. Remove, or add the required risk warning and get compliance sign-off."},
+  {re:/\b(risk[- ]?free|zero risk|no risk)\b/gi, sev:"crit", rule:"REG-02 · risk claim",
+   src:"FCA COBS 4.2 (fair, clear, not misleading)", msg:"Claims the product carries no risk.",
+   fix:"Almost nothing is risk-free. State the actual risk position or cut the claim."},
+  {re:/\b(100% (safe|secure)|completely (safe|secure)|totally secure|unhackable)\b/gi, sev:"crit", rule:"REG-03 · absolute security claim",
+   src:"CAP Code 3.1 (misleading advertising); ASA precedent on absolute claims", msg:"Absolute security claims are unprovable and have been ruled misleading.",
+   fix:"State what is actually done: encryption standard, audit, certification."},
+  {re:/\b(completely free|totally free|100% free)\b/gi, sev:"warn", rule:"REG-04 · use of 'free'",
+   src:"CAP Code 3.23–3.26", msg:"'Free' claims need care: the ASA rules against 'free' where any cost or condition applies.",
+   fix:"If any payment, data, or commitment is required, qualify the claim at the point it is made."},
+  {re:/\b(won'?t last|limited time only|act now|today only|last chance|hurry|before it'?s too late|offer ends soon)\b/gi, sev:"crit", rule:"REG-05 · false urgency",
+   src:"DMCC Act 2024 / CPRs banned practice 7 (falsely stating limited availability)", msg:"Urgency claims are unlawful if the deadline or scarcity is not real.",
+   fix:"State the genuine end date and terms, or remove the urgency."},
+  {re:/\b(eco[- ]?friendly|environmentally friendly|green|sustainable|carbon[- ]?neutral|net[- ]?zero|planet[- ]?friendly)\b/gi, sev:"warn", rule:"REG-06 · green claim",
+   src:"CMA Green Claims Code; CAP Code 11", msg:"Environmental claims need substantiation covering the full life cycle.",
+   fix:"Evidence the specific claim (scheme, certification, data) or narrow it to what is provable."},
+  {re:/\b(clinically proven|doctor recommended|scientifically proven)\b/gi, sev:"crit", rule:"REG-07 · proof claim",
+   src:"CAP Code 3.7 (substantiation); 12 (medicines & health)", msg:"Claims of proof require documentary evidence held before publication.",
+   fix:"Hold the substantiation file first, cite it, or remove the claim."},
+  {re:/\b(no purchase necessary|winners? (will be|are) (chosen|selected))\b/gi, sev:"warn", rule:"REG-08 · promotion terms",
+   src:"CAP Code 8 (promotional marketing)", msg:"Prize promotions carry significant-conditions requirements.",
+   fix:"Publish full terms: closing date, eligibility, prize details, judging."}
+];
+
+let banned = ["passionate","world-class","leverage","cutting-edge","seamless","empower","empowers","unlock","incredible","robust","innovative","game-changer","disrupt","best-in-class","solutions","solution","journey","transform","synergy","next-level","elevate"];
+const SUBS = {"leverage":"use","utilise":"use","utilize":"use","empowers":"lets","empower":"let","seamless":"works without manual steps","solutions":"products","solution":"product","transform":"change","journey":"process","robust":"tested","innovative":"new","cutting-edge":"current","world-class":"(state the measurable claim)","incredible":"(state the number)","passionate":"(cut — show the work instead)"};
+const SUPERLATIVES = /\b(most|best|leading|fastest|largest|#1|number one|top)\b/gi;
+const HAS_EVIDENCE = /\d|%|\bper\b|according to|source|study|n=/i;
+
+const $ = id => document.getElementById(id);
+
+function esc(s){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+
+function splitSentences(t){return t.split(/(?<=[.!?])\s+/).filter(s=>s.trim().length)}
+
+function flesch(t){
+  const words=t.match(/[a-zA-Z']+/g)||[]; if(!words.length) return 100;
+  const sents=Math.max(1,splitSentences(t).length);
+  const syl=words.reduce((a,w)=>a+Math.max(1,(w.toLowerCase().match(/[aeiouy]+/g)||[]).length),0);
+  return Math.round(206.835-1.015*(words.length/sents)-84.6*(syl/words.length));
+}
+
+function review(text){
+  const v=[]; // {sev, rule, text, msg, fix, cat}
+  // Banned lexicon
+  for(const term of banned){
+    const re=new RegExp("\\b"+term.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\b","gi");
+    let m; while((m=re.exec(text))){
+      v.push({sev:"crit",cat:"lexicon",rule:"LEX-01 · banned term",text:m[0],idx:m.index,len:m[0].length,
+        msg:`"${m[0]}" is on the banned list.`,
+        fix:SUBS[term]?`Substitute: ${SUBS[term]}`:"Cut it, or replace with a specific claim."});
+    }
+  }
+  // Sentences
+  const sents=splitSentences(text); let pos=0;
+  for(const s of sents){
+    const idx=text.indexOf(s,pos); pos=idx+s.length;
+    const wc=(s.match(/\S+/g)||[]).length;
+    if(wc>30) v.push({sev:"warn",cat:"clarity",rule:"CLR-01 · long sentence",text:s,idx,len:s.length,
+      msg:`${wc} words in one sentence.`,fix:"Break it into two. Aim under 25 words."});
+    if(SUPERLATIVES.test(s) && !HAS_EVIDENCE.test(s)){
+      SUPERLATIVES.lastIndex=0;
+      v.push({sev:"crit",cat:"claims",rule:"CLM-01 · unevidenced superlative",text:s,idx,len:s.length,
+        msg:"A superlative claim with no number or source beside it.",fix:"Add the figure and its source, or remove the claim."});
+    }
+    SUPERLATIVES.lastIndex=0;
+    if(/\b(is|are|was|were|been|being|be)\s+\w+ed\b/.test(s))
+      v.push({sev:"warn",cat:"clarity",rule:"CLR-02 · passive voice",text:s,idx,len:s.length,
+        msg:"Likely passive construction.",fix:"Name who does the action."});
+  }
+  // Regulatory
+  for(const R of REG_RULES){
+    R.re.lastIndex=0; let mm;
+    while((mm=R.re.exec(text))){
+      v.push({sev:R.sev,cat:"regulatory",rule:R.rule,src:R.src,text:mm[0],idx:mm.index,len:mm[0].length,
+        msg:`"${mm[0]}" — ${R.msg}`,fix:R.fix});
+    }
+  }
+  // Mechanics
+  let m; const ex=/!/g;
+  while((m=ex.exec(text))) v.push({sev:"warn",cat:"mechanics",rule:"MEC-01 · exclamation",text:"!",idx:m.index,len:1,
+    msg:"Exclamation mark.",fix:"The claim should carry the emphasis. Use a full stop."});
+  const caps=/\b[A-Z]{4,}\b/g;
+  while((m=caps.exec(text))) v.push({sev:"warn",cat:"mechanics",rule:"MEC-02 · shouting caps",text:m[0],idx:m.index,len:m[0].length,
+    msg:`"${m[0]}" is set in caps.`,fix:"Sentence case unless it's a label or an acronym."});
+  const fl=flesch(text);
+  return {v,fl,sents:sents.length};
+}
+
+function score(r){
+  const pen={lexicon:0,claims:0,clarity:0,mechanics:0,regulatory:0};
+  for(const x of r.v) pen[x.cat]+= x.sev==="crit"?8:3;
+  const cats={
+    lexicon:Math.max(0,100-pen.lexicon*2),
+    claims:Math.max(0,100-pen.claims*2.5),
+    clarity:Math.max(0,Math.min(100, (r.fl<50? r.fl+30 : 100) - pen.clarity)),
+    mechanics:Math.max(0,100-pen.mechanics*3),
+    regulatory:Math.max(0,100-pen.regulatory*3)
+  };
+  const total=Math.round(cats.regulatory*.3+cats.lexicon*.25+cats.claims*.2+cats.clarity*.15+cats.mechanics*.1);
+  const regBlock=r.v.some(x=>x.cat==="regulatory"&&x.sev==="crit");
+  return {total,cats,regBlock};
+}
+
+function rewrite(text){
+  let out=text;
+  for(const [k,sub] of Object.entries(SUBS)){
+    out=out.replace(new RegExp("\\b"+k+"\\b","gi"),sub);
+  }
+  out=out.replace(/!/g,".");
+  return out;
+}
+
+function tonePass(r,s){
+  const lines=[];
+  if(s.cats.lexicon<70) lines.push("The draft leans on category vocabulary — the same words a competitor would use. It describes the market, not this brand.");
+  if(s.cats.claims<80) lines.push("Superlatives appear without evidence beside them. Each big claim needs a figure and a source, or it should go.");
+  if(r.fl<50) lines.push(`Reading ease is ${r.fl} (target 60–70). Shorter sentences and plainer words would fix most of it.`);
+  else lines.push(`Reading ease is ${r.fl} — inside the 60–70 target once the flagged sentences are broken up.`);
+  if(!lines.length) lines.push("Tone is close to the guide. Nothing material to raise.");
+  return lines;
+}
+
+function render(){
+  const text=$("input").value.trim();
+  if(!text){$("report").innerHTML='<p class="empty">Nothing to review yet.</p>';$("markup").innerHTML="";return}
+  const r=review(text), s=score(r);
+  // markup — sort spans, drop overlaps
+  const spans=[...r.v].filter(x=>x.len<200).sort((a,b)=>a.idx-b.idx||b.len-a.len);
+  let html="",cur=0;
+  for(const sp of spans){
+    if(sp.idx<cur) continue;
+    html+=esc(text.slice(cur,sp.idx));
+    html+=`<mark class="${sp.sev}" title="${esc(sp.rule)}: ${esc(sp.msg)} ${esc(sp.fix)}">${esc(text.slice(sp.idx,sp.idx+sp.len))}</mark>`;
+    cur=sp.idx+sp.len;
+  }
+  html+=esc(text.slice(cur));
+  $("markup").innerHTML=html;
+
+  const pill=s.regBlock?["crit","Blocked — regulatory"]:s.total>=80?["pass","Cleared"]:s.total>=55?["warn","Needs revision"]:["crit","Blocked"];
+  const catRow=(l,n)=>`<div class="cat"><div class="n mono">${n}</div><div class="l">${l}</div><div class="bar"><i style="width:${n}%"></i></div></div>`;
+  const crits=r.v.filter(x=>x.sev==="crit").length;
+  $("report").innerHTML=`
+    <div class="scorehead">
+      <div class="scorenum serif">${s.total}<small>/100</small></div>
+      <div class="verdict"><span class="pill ${pill[0]}">${pill[1]}</span>
+        <div style="margin-top:6px;color:var(--ink2)">${r.v.length} finding${r.v.length===1?"":"s"} · ${crits} critical · reading ease ${r.fl}</div></div>
+    </div>
+    <div class="cats">
+      ${catRow("Regulatory",Math.round(s.cats.regulatory))}${catRow("Lexicon",Math.round(s.cats.lexicon))}
+      ${catRow("Claims",Math.round(s.cats.claims))}${catRow("Clarity",Math.round(s.cats.clarity))}
+      ${catRow("Mechanics",Math.round(s.cats.mechanics))}
+    </div>
+    <h2>Findings</h2>
+    ${r.v.length?`<ul class="vlist">${r.v.slice(0,40).map(x=>`
+      <li class="v ${x.sev}"><span class="rule">${esc(x.rule)}${x.src?` · ${esc(x.src)}`:""}</span><div>${esc(x.msg)}</div><div class="fix">→ <b>${esc(x.fix)}</b></div></li>`).join("")}</ul>`
+      :'<p class="empty">No rule violations.</p>'}
+    <section class="block">
+      <h2>Tone review</h2>
+      <div class="sim"><span class="simtag">Simulated — model call in production</span>
+        ${tonePass(r,s).map(l=>`<p style="margin:6px 0">${esc(l)}</p>`).join("")}</div>
+    </section>
+    <section class="block">
+      <h2>Suggested rewrite</h2>
+      <div class="sim"><span class="simtag">Simulated — substitutions only</span>
+        <p style="white-space:pre-wrap;margin:6px 0">${esc(rewrite(text))}</p>
+        <p style="color:var(--ink3);font-size:12px;margin:8px 0 0">A real model pass would also restructure sentences and pull evidence forward. This shows the substitution layer only.</p></div>
+    </section>`;
+}
+
+function drawChips(){
+  $("chips").innerHTML=banned.map((t,i)=>`<span class="chip">${esc(t)}<button aria-label="Remove ${esc(t)}" data-i="${i}">×</button></span>`).join("");
+}
+$("chips").addEventListener("click",e=>{
+  if(e.target.dataset.i!==undefined){banned.splice(+e.target.dataset.i,1);drawChips();render();}
+});
+$("addterm").addEventListener("click",()=>{
+  const t=$("newterm").value.trim().toLowerCase();
+  if(t&&!banned.includes(t)){banned.push(t);$("newterm").value="";drawChips();render();}
+});
+$("newterm").addEventListener("keydown",e=>{if(e.key==="Enter")$("addterm").click()});
+$("run").addEventListener("click",render);
+$("sample").addEventListener("click",()=>{$("input").value=SAMPLE;render()});
+$("clear").addEventListener("click",()=>{$("input").value="";render()});
+drawChips();
+</script>
+</body>
+</html>
