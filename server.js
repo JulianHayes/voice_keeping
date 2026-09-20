@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const HOST = '0.0.0.0';
 
 app.use(express.json());
@@ -514,4 +514,7 @@ app.get('*', (req, res) => {
 app.listen(PORT, HOST, () => {
   console.log(`Voice Governor running on http://${HOST}:${PORT}`);
 });
+
+// Hosts that supply their own handler import the app rather than the listener.
+export default app;
 
