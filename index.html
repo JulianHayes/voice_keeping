@@ -12,6 +12,16 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
 
+<script>
+// Resolve theme before first paint: saved choice wins, otherwise follow the OS.
+(function () {
+  var saved = null;
+  try { saved = localStorage.getItem("vg-theme"); } catch (e) {}
+  var dark = saved ? saved === "dark"
+    : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+})();
+</script>
 <style>
 :root {
   /* Eero Saarinen Organic Modernist Palette: Travertine, Cast Plaster & TWA Cardinal Red */
@@ -20,7 +30,7 @@
   --pit: #ECE7DC;
   --ink: #172120;
   --ink2: #414F4B;
-  --ink3: #6F7F7A;
+  --ink3: #5A6863;
   
   --line: #D9D3C5;
   --line-soft: #E8E3D8;
@@ -28,12 +38,14 @@
   /* Saarinen Cardinal / TWA Red & Mid-Century Accent Pigments */
   --accent: #C41E24;
   --accent-hover: #A0151A;
+  --accent-text: #C41E24;
+  --on-accent: #FFFFFF;
   --accent-soft: #FDE8E9;
   --accent-glow: rgba(196, 30, 36, 0.2);
   
   --crit: #C41E24;
   --crit-soft: #FDE8E9;
-  --warn: #966C15;
+  --warn: #7F5B10;
   --warn-soft: #F9F1DC;
   --pass: #1B7A54;
   --pass-soft: #E2F3EC;
@@ -41,6 +53,10 @@
   --mark-crit: rgba(196, 30, 36, 0.16);
   --mark-warn: rgba(150, 108, 21, 0.18);
   
+  /* Motion: one strong ease-out curve, one for on-screen movement */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
   --shadow-sculptural: 0 16px 36px -10px rgba(35, 30, 22, 0.08), 0 2px 8px -2px rgba(35, 30, 22, 0.04);
   --shadow-pedestal: 0 6px 18px -4px rgba(196, 30, 36, 0.32);
   --shadow-pit: inset 0 2px 6px rgba(35, 30, 20, 0.07), inset 0 1px 2px rgba(35, 30, 20, 0.04);
@@ -52,17 +68,19 @@
   --pit: #141A1B;
   --ink: #EDEFEF;
   --ink2: #AAB6B8;
-  --ink3: #758385;
+  --ink3: #7E8C8E;
   
   --line: #2C3639;
   --line-soft: #222B2E;
   
   --accent: #E6454B;
   --accent-hover: #FF5A60;
+  --accent-text: #EE5A60;
+  --on-accent: #1A0B0C;
   --accent-soft: #381517;
   --accent-glow: rgba(230, 69, 75, 0.28);
   
-  --crit: #E6454B;
+  --crit: #EE5A60;
   --crit-soft: #381517;
   --warn: #D8AA47;
   --warn-soft: #352B14;
@@ -140,7 +158,7 @@ header .tag {
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--accent-text);
   border: 1px solid var(--accent);
   background: var(--accent-soft);
   padding: 3px 10px;
@@ -178,11 +196,16 @@ header .brand b {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease,
+              border-color 0.2s ease,
+              color 0.2s ease,
+              box-shadow 0.2s ease,
+              opacity 0.2s ease,
+              transform 0.2s ease;
 }
 .theme-toggle-btn:hover {
   border-color: var(--accent);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 /* Main Architectural Workspace */
@@ -253,7 +276,12 @@ textarea {
   padding: 18px;
   font: 16px/1.65 "Instrument Sans", system-ui, sans-serif;
   box-shadow: var(--shadow-pit);
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease,
+              border-color 0.2s ease,
+              color 0.2s ease,
+              box-shadow 0.2s ease,
+              opacity 0.2s ease,
+              transform 0.2s ease;
 }
 
 textarea:focus {
@@ -283,22 +311,42 @@ button {
   color: var(--ink);
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
 
-button:hover {
-  transform: translateY(-1px);
-  border-color: var(--ink3);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+@media (hover: hover) and (pointer: fine) {
+  button:hover {
+    transform: translateY(-1px);
+    border-color: var(--ink3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  }
+}
+
+/* Press feedback: the control must answer the finger before the network does */
+button:active,
+.theme-toggle-btn:active,
+.brand-config-btn:active,
+.brand-banner-btn:active,
+.preset-btn:active,
+.copy-btn:active,
+.rewrite-tab-btn:active,
+.modal-close:active {
+  transform: scale(0.97);
+  transition-duration: 0.1s;
 }
 
 button.primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: #FFFFFF;
+  color: var(--on-accent);
   box-shadow: var(--shadow-pedestal);
 }
 
@@ -324,7 +372,12 @@ button:focus-visible {
   white-space: pre-wrap;
   font-size: 15px;
   box-shadow: var(--shadow-pit);
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease,
+              border-color 0.2s ease,
+              color 0.2s ease,
+              box-shadow 0.2s ease,
+              opacity 0.2s ease,
+              transform 0.2s ease;
 }
 
 .markup:empty::before {
@@ -437,7 +490,12 @@ mark.warn {
   border-radius: 14px;
   padding: 12px 14px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease,
+              border-color 0.2s ease,
+              color 0.2s ease,
+              box-shadow 0.2s ease,
+              opacity 0.2s ease,
+              transform 0.2s ease;
 }
 
 .cat:hover {
@@ -594,7 +652,7 @@ mark.warn {
 }
 
 .v .fix b {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 /* Simulated Sections: Tone Review & Rewrite */
@@ -619,7 +677,7 @@ section.block {
   font-size: 10.5px;
   letter-spacing: 0.1em;
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--accent-text);
   border: 1px solid var(--accent-glow);
   padding: 3px 10px;
   border-radius: 12px;
@@ -656,7 +714,12 @@ section.block {
   padding: 6px 16px;
   border-radius: 20px;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: background-color 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+              border-color 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+              color 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+              opacity 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+              transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
   box-shadow: none;
 }
 
@@ -666,7 +729,7 @@ section.block {
 
 .rewrite-tab-btn.active {
   background: var(--panel);
-  color: var(--accent);
+  color: var(--accent-text);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   font-weight: 700;
 }
@@ -678,7 +741,12 @@ section.block {
   padding: 20px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
   position: relative;
-  transition: all 0.25s ease;
+  transition: background-color 0.25s ease,
+              border-color 0.25s ease,
+              color 0.25s ease,
+              box-shadow 0.25s ease,
+              opacity 0.25s ease,
+              transform 0.25s ease;
 }
 
 .rewrite-card-header {
@@ -715,7 +783,7 @@ section.block {
   padding: 2px 8px;
   border-radius: 10px;
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--accent-text);
   font-weight: 600;
   border: 1px solid rgba(230, 69, 75, 0.2);
 }
@@ -756,7 +824,12 @@ section.block {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease,
+              border-color 0.2s ease,
+              color 0.2s ease,
+              box-shadow 0.2s ease,
+              opacity 0.2s ease,
+              transform 0.2s ease;
 }
 
 .rewrite-brand-interpretation {
@@ -787,7 +860,7 @@ section.block {
   padding: 2px 7px;
   border-radius: 6px;
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .interpretation-brand-tag {
@@ -813,7 +886,12 @@ section.block {
   font-weight: 600;
   color: var(--ink2);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease,
+              border-color 0.15s ease,
+              color 0.15s ease,
+              box-shadow 0.15s ease,
+              opacity 0.15s ease,
+              transform 0.15s ease;
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -821,7 +899,7 @@ section.block {
 
 .copy-btn:hover {
   border-color: var(--accent);
-  color: var(--accent);
+  color: var(--accent-text);
   background: var(--accent-soft);
 }
 
@@ -849,7 +927,7 @@ section.block {
   width: 18px;
   height: 18px;
   border: 2px solid var(--line);
-  border-top-color: var(--accent);
+  border-top-color: var(--accent-text);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -877,7 +955,7 @@ details.rules summary {
 }
 
 details.rules summary:hover {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .chips {
@@ -898,7 +976,12 @@ details.rules summary:hover {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease,
+              border-color 0.15s ease,
+              color 0.15s ease,
+              box-shadow 0.15s ease,
+              opacity 0.15s ease,
+              transform 0.15s ease;
 }
 
 .chip button {
@@ -950,12 +1033,17 @@ details.rules summary:hover {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease,
+              border-color 0.2s ease,
+              color 0.2s ease,
+              box-shadow 0.2s ease,
+              opacity 0.2s ease,
+              transform 0.2s ease;
 }
 
 .brand-config-btn:hover {
   border-color: var(--accent);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .brand-badge {
@@ -1048,12 +1136,17 @@ details.rules summary:hover {
   font-weight: 600;
   cursor: pointer;
   font-family: "Instrument Sans", system-ui, sans-serif;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease,
+              border-color 0.2s ease,
+              color 0.2s ease,
+              box-shadow 0.2s ease,
+              opacity 0.2s ease,
+              transform 0.2s ease;
 }
 
 .brand-banner-btn:hover {
   border-color: var(--accent);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 /* Modal Overlay & Dialog */
@@ -1145,14 +1238,19 @@ details.rules summary:hover {
   justify-content: center;
   font-size: 16px;
   line-height: 1;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease,
+              border-color 0.2s ease,
+              color 0.2s ease,
+              box-shadow 0.2s ease,
+              opacity 0.2s ease,
+              transform 0.2s ease;
   flex-shrink: 0;
 }
 
 .modal-close:hover {
   background: var(--accent-soft);
   border-color: var(--accent);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .modal-body {
@@ -1179,7 +1277,12 @@ details.rules summary:hover {
   color: var(--ink2);
   cursor: pointer;
   font-family: "Instrument Sans", system-ui, sans-serif;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease,
+              border-color 0.15s ease,
+              color 0.15s ease,
+              box-shadow 0.15s ease,
+              opacity 0.15s ease,
+              transform 0.15s ease;
 }
 
 .preset-btn:hover {
@@ -1256,7 +1359,12 @@ details.rules summary:hover {
   padding: 18px;
   text-align: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease,
+              border-color 0.2s ease,
+              color 0.2s ease,
+              box-shadow 0.2s ease,
+              opacity 0.2s ease,
+              transform 0.2s ease;
   position: relative;
 }
 
@@ -1319,6 +1427,22 @@ details.rules summary:hover {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--ink3); }
+
+/* Reduced motion: keep colour and opacity cues, drop every movement. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  button:hover,
+  button:active {
+    transform: none;
+  }
+}
 </style>
 </head>
 
@@ -2592,7 +2716,7 @@ function handleFile(file){
 
     const dropP = dropzone.querySelector("p");
     if(dropP) {
-      dropP.innerHTML = `✓ Ingested <b style="color:var(--accent)">${esc(file.name)}</b>`;
+      dropP.innerHTML = `✓ Ingested <b style="color:var(--accent-text)">${esc(file.name)}</b>`;
     }
     const dropSm = dropzone.querySelector("small");
     if(dropSm) {
@@ -2737,14 +2861,32 @@ $("clear").addEventListener("click", () => {
 
 // Theme toggle
 const themeToggle = $("theme_toggle");
-let isDark = false;
+const osDark = window.matchMedia("(prefers-color-scheme: dark)");
+let isDark = document.documentElement.getAttribute("data-theme") === "dark";
 
-themeToggle.addEventListener("click", () => {
-  isDark = !isDark;
+function paintTheme() {
   document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
   $("theme_label").textContent = isDark ? "Daylight Mode" : "Terminal Mode";
   $("theme_icon").textContent = isDark ? "☼" : "◐";
+  themeToggle.setAttribute("aria-pressed", String(isDark));
+}
+
+themeToggle.addEventListener("click", () => {
+  isDark = !isDark;
+  try { localStorage.setItem("vg-theme", isDark ? "dark" : "light"); } catch (e) {}
+  paintTheme();
 });
+
+// Follow the OS until the user states a preference of their own.
+osDark.addEventListener("change", (e) => {
+  let saved = null;
+  try { saved = localStorage.getItem("vg-theme"); } catch (err) {}
+  if (saved) return;
+  isDark = e.matches;
+  paintTheme();
+});
+
+paintTheme();
 
 // Initial boot
 updateBrandUI();
