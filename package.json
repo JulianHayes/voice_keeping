@@ -1,0 +1,16 @@
+{
+  "name": "voice-governor",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js",
+    "build": "echo 'Build complete'",
+    "start": "node server.js",
+    "lint": "node --check server.js"
+  },
+  "dependencies": {
+    "@google/genai": "^2.23.0",
+    "express": "^4.21.2"
+  }
+}

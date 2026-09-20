@@ -1,117 +1,1372 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Voice Governor — prototype</title>
-</head>
-<body>
+<title>Voice Governor</title>
+<meta name="description" content="Adaptive brand voice governance and regulatory compliance screening with customizable brand tone of voice guidelines ingestion.">
+<meta property="og:title" content="Voice Governor">
+<meta property="og:description" content="Adaptive brand voice governance and regulatory compliance screening with customizable brand tone of voice guidelines ingestion.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+
 <style>
-:root{
-  --paper:#F3F5F4; --panel:#FBFCFB; --ink:#182220; --ink2:#44524E; --ink3:#71807B;
-  --line:#D6DEDB; --accent:#0E6B5C; --accent-soft:#E2EEEB;
-  --crit:#B3261E; --crit-soft:#F7E4E2; --warn:#8A6100; --warn-soft:#F4EBD6; --pass:#1E7A46; --pass-soft:#E0EFE5;
-  --mark-crit:rgba(179,38,30,.16); --mark-warn:rgba(154,106,0,.16);
+:root {
+  /* Eero Saarinen Organic Modernist Palette: Travertine, Cast Plaster & TWA Cardinal Red */
+  --paper: #F5F2EA;
+  --panel: #FAF8F5;
+  --pit: #ECE7DC;
+  --ink: #172120;
+  --ink2: #414F4B;
+  --ink3: #6F7F7A;
+  
+  --line: #D9D3C5;
+  --line-soft: #E8E3D8;
+  
+  /* Saarinen Cardinal / TWA Red & Mid-Century Accent Pigments */
+  --accent: #C41E24;
+  --accent-hover: #A0151A;
+  --accent-soft: #FDE8E9;
+  --accent-glow: rgba(196, 30, 36, 0.2);
+  
+  --crit: #C41E24;
+  --crit-soft: #FDE8E9;
+  --warn: #966C15;
+  --warn-soft: #F9F1DC;
+  --pass: #1B7A54;
+  --pass-soft: #E2F3EC;
+  
+  --mark-crit: rgba(196, 30, 36, 0.16);
+  --mark-warn: rgba(150, 108, 21, 0.18);
+  
+  --shadow-sculptural: 0 16px 36px -10px rgba(35, 30, 22, 0.08), 0 2px 8px -2px rgba(35, 30, 22, 0.04);
+  --shadow-pedestal: 0 6px 18px -4px rgba(196, 30, 36, 0.32);
+  --shadow-pit: inset 0 2px 6px rgba(35, 30, 20, 0.07), inset 0 1px 2px rgba(35, 30, 20, 0.04);
 }
-@media (prefers-color-scheme: dark){
-  :root{
-    --paper:#141A18; --panel:#1C2422; --ink:#E7ECEA; --ink2:#AFBCB8; --ink3:#7C8A85;
-    --line:#2E3A36; --accent:#4FBBA4; --accent-soft:#1E332E;
-    --crit:#E88C85; --crit-soft:#3A2321; --warn:#D9B25C; --warn-soft:#362D18; --pass:#6FC791; --pass-soft:#1D3226;
-    --mark-crit:rgba(232,140,133,.22); --mark-warn:rgba(217,178,92,.20);
+
+:root[data-theme="dark"] {
+  --paper: #121617;
+  --panel: #1A2022;
+  --pit: #141A1B;
+  --ink: #EDEFEF;
+  --ink2: #AAB6B8;
+  --ink3: #758385;
+  
+  --line: #2C3639;
+  --line-soft: #222B2E;
+  
+  --accent: #E6454B;
+  --accent-hover: #FF5A60;
+  --accent-soft: #381517;
+  --accent-glow: rgba(230, 69, 75, 0.28);
+  
+  --crit: #E6454B;
+  --crit-soft: #381517;
+  --warn: #D8AA47;
+  --warn-soft: #352B14;
+  --pass: #4DC99C;
+  --pass-soft: #143528;
+  
+  --mark-crit: rgba(230, 69, 75, 0.25);
+  --mark-warn: rgba(216, 170, 71, 0.22);
+  
+  --shadow-sculptural: 0 18px 42px -12px rgba(0, 0, 0, 0.45);
+  --shadow-pedestal: 0 6px 20px -4px rgba(230, 69, 75, 0.4);
+  --shadow-pit: inset 0 3px 8px rgba(0, 0, 0, 0.35);
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.6 "Instrument Sans", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+.serif { font-family: "Instrument Sans", system-ui, sans-serif; }
+.mono { font-family: "Instrument Sans", system-ui, monospace; font-variant-numeric: tabular-nums; }
+.arch-sans { font-family: "Instrument Sans", system-ui, sans-serif; }
+
+/* Structural Canopy Header — Catenary Vault Geometry */
+header {
+  position: relative;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  padding: 22px 36px 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.02);
+  overflow: hidden;
+}
+
+/* Subtle Catenary Arch watermark in header background */
+.catenary-arch-bg {
+  position: absolute;
+  top: -50px;
+  right: -30px;
+  width: 440px;
+  height: 240px;
+  pointer-events: none;
+  opacity: 0.12;
+  stroke: var(--accent);
+  fill: none;
+}
+:root[data-theme="dark"] .catenary-arch-bg { opacity: 0.16; }
+
+header h1 {
+  font-family: "Instrument Sans", system-ui, sans-serif;
+  font-size: 25px;
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+header .tag {
+  font-family: "Instrument Sans", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+header .brand {
+  margin-left: auto;
+  font-size: 13.5px;
+  color: var(--ink2);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  padding: 5px 14px;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+header .brand b {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.theme-toggle-btn {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--ink2);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-family: "Instrument Sans", system-ui, sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+.theme-toggle-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Main Architectural Workspace */
+main {
+  max-width: 1440px;
+  margin: 0 auto;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(360px, 1.25fr) minmax(320px, 1fr);
+  gap: 0;
+  flex: 1;
+}
+
+@media (max-width: 900px) {
+  main { grid-template-columns: 1fr; }
+}
+
+.pane {
+  padding: 32px 36px;
+}
+
+.pane.left {
+  border-right: 1px solid var(--line);
+}
+
+@media (max-width: 900px) {
+  .pane.left {
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    padding: 24px 20px;
+  }
+  .pane {
+    padding: 24px 20px;
   }
 }
-:root[data-theme="light"]{
-  --paper:#F3F5F4; --panel:#FBFCFB; --ink:#182220; --ink2:#44524E; --ink3:#71807B;
-  --line:#D6DEDB; --accent:#0E6B5C; --accent-soft:#E2EEEB;
-  --crit:#B3261E; --crit-soft:#F7E4E2; --warn:#8A6100; --warn-soft:#F4EBD6; --pass:#1E7A46; --pass-soft:#E0EFE5;
-  --mark-crit:rgba(179,38,30,.16); --mark-warn:rgba(154,106,0,.16);
-}
-:root[data-theme="dark"]{
-  --paper:#141A18; --panel:#1C2422; --ink:#E7ECEA; --ink2:#AFBCB8; --ink3:#7C8A85;
-  --line:#2E3A36; --accent:#4FBBA4; --accent-soft:#1E332E;
-  --crit:#E88C85; --crit-soft:#3A2321; --warn:#D9B25C; --warn-soft:#362D18; --pass:#6FC791; --pass-soft:#1D3226;
-  --mark-crit:rgba(232,140,133,.22); --mark-warn:rgba(217,178,92,.20);
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--paper);color:var(--ink);
-  font:16px/1.55 "Avenir Next","Segoe UI",system-ui,sans-serif;}
-.serif{font-family:Georgia,"Times New Roman",serif}
-.mono{font-family:ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums}
-header{display:flex;align-items:baseline;gap:14px;padding:20px 28px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-header h1{font-family:Georgia,serif;font-size:22px;margin:0;font-weight:600;letter-spacing:-.01em}
-header .tag{font-family:ui-monospace,Consolas,monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;
-  color:var(--accent);border:1px solid var(--accent);padding:2px 8px;border-radius:2px}
-header .brand{margin-left:auto;font-size:13px;color:var(--ink2)}
-header .brand b{color:var(--ink)}
-main{display:grid;grid-template-columns:minmax(320px,1.25fr) minmax(300px,1fr);gap:0;min-height:calc(100vh - 70px)}
-@media(max-width:880px){main{grid-template-columns:1fr}}
-.pane{padding:22px 28px}
-.pane.left{border-right:1px solid var(--line)}
-@media(max-width:880px){.pane.left{border-right:none;border-bottom:1px solid var(--line)}}
-.pane h2{font-family:ui-monospace,Consolas,monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--ink3);font-weight:600;margin:0 0 10px}
-textarea{width:100%;min-height:220px;resize:vertical;background:var(--panel);color:var(--ink);
-  border:1px solid var(--line);border-radius:3px;padding:14px;font:16px/1.6 inherit;font-family:inherit}
-textarea:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
-.btnrow{display:flex;gap:8px;margin:10px 0 18px;flex-wrap:wrap}
-button{font:600 13px/1 inherit;padding:9px 14px;border-radius:3px;border:1px solid var(--line);
-  background:var(--panel);color:var(--ink);cursor:pointer}
-button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-:root[data-theme="dark"] button.primary, body button.primary{color:#fff}
-button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.markup{background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:16px;line-height:1.75;min-height:80px;white-space:pre-wrap}
-.markup:empty::before{content:"Marked-up copy appears here after review.";color:var(--ink3)}
-mark{border-radius:2px;padding:0 2px;color:inherit;cursor:help}
-mark.crit{background:var(--mark-crit);border-bottom:2px solid var(--crit)}
-mark.warn{background:var(--mark-warn);border-bottom:2px dotted var(--warn)}
-.scorehead{display:flex;align-items:center;gap:20px;margin-bottom:18px}
-.scorenum{font-family:Georgia,serif;font-size:64px;line-height:1;font-weight:600;min-width:110px}
-.scorenum small{font-size:20px;color:var(--ink3);font-weight:400}
-.verdict{font-size:13px}
-.verdict .pill{display:inline-block;font-family:ui-monospace,Consolas,monospace;font-size:11px;letter-spacing:.08em;
-  padding:3px 10px;border-radius:2px;text-transform:uppercase;font-weight:600}
-.pill.pass{background:var(--pass-soft);color:var(--pass)}
-.pill.warn{background:var(--warn-soft);color:var(--warn)}
-.pill.crit{background:var(--crit-soft);color:var(--crit)}
-.cats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
-.cat{background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:10px 12px}
-.cat .n{font-family:ui-monospace,Consolas,monospace;font-size:18px;font-weight:600}
-.cat .l{font-size:12px;color:var(--ink2)}
-.bar{height:4px;background:var(--line);border-radius:2px;margin-top:6px;overflow:hidden}
-.bar i{display:block;height:100%;background:var(--accent)}
-.vlist{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
-.v{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:3px;padding:10px 12px;font-size:14px}
-.v.crit{border-left-color:var(--crit)}
-.v .rule{font-family:ui-monospace,Consolas,monospace;font-size:11px;letter-spacing:.06em;color:var(--ink3);text-transform:uppercase}
-.v .fix{color:var(--ink2);font-size:13px;margin-top:3px}
-.v .fix b{color:var(--accent)}
-section.block{margin-top:26px}
-.sim{background:var(--panel);border:1px dashed var(--accent);border-radius:3px;padding:14px 16px;font-size:14px}
-.simtag{display:inline-block;font-family:ui-monospace,Consolas,monospace;font-size:10px;letter-spacing:.1em;
-  background:var(--accent-soft);color:var(--accent);padding:2px 8px;border-radius:2px;margin-bottom:8px;text-transform:uppercase;font-weight:600}
-details.rules{margin-top:26px;border-top:1px solid var(--line);padding-top:14px}
-details.rules summary{cursor:pointer;font-family:ui-monospace,Consolas,monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);font-weight:600}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
-.chip{font-family:ui-monospace,Consolas,monospace;font-size:12px;background:var(--crit-soft);color:var(--crit);
-  padding:3px 8px;border-radius:2px;display:inline-flex;align-items:center;gap:6px}
-.chip button{all:unset;cursor:pointer;font-weight:700;padding:0 2px}
-.addrow{display:flex;gap:8px;margin-top:8px}
-.addrow input{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:8px 10px;color:var(--ink);font:14px inherit;font-family:inherit}
-.addrow input:focus{outline:2px solid var(--accent)}
-.foot{padding:14px 28px;border-top:1px solid var(--line);font-size:12px;color:var(--ink3)}
-.empty{color:var(--ink3);font-size:14px}
-</style>
 
+.pane h2 {
+  font-family: "Instrument Sans", system-ui, sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  font-weight: 700;
+  margin: 0 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pane h2::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* Recessed "Conversation Pit" Textarea */
+textarea {
+  width: 100%;
+  min-height: 240px;
+  resize: vertical;
+  background: var(--pit);
+  color: var(--ink);
+  border: 1.5px solid var(--line);
+  border-radius: 18px;
+  padding: 18px;
+  font: 16px/1.65 "Instrument Sans", system-ui, sans-serif;
+  box-shadow: var(--shadow-pit);
+  transition: all 0.2s ease;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--panel);
+  box-shadow: 0 0 0 3px var(--accent-glow), var(--shadow-pit);
+}
+
+/* Pedestal Button Row */
+.btnrow {
+  display: flex;
+  gap: 10px;
+  margin: 14px 0 24px;
+  flex-wrap: wrap;
+}
+
+button {
+  font-family: "Instrument Sans", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 10px 18px;
+  border-radius: 24px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  border-color: var(--ink3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #FFFFFF;
+  box-shadow: var(--shadow-pedestal);
+}
+
+button.primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  box-shadow: 0 8px 22px -2px rgba(196, 30, 36, 0.4);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Marked-Up Copy Container */
+.markup {
+  background: var(--pit);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 20px;
+  line-height: 1.8;
+  min-height: 90px;
+  white-space: pre-wrap;
+  font-size: 15px;
+  box-shadow: var(--shadow-pit);
+  transition: all 0.2s ease;
+}
+
+.markup:empty::before {
+  content: "Marked-up copy appears here after review.";
+  color: var(--ink3);
+  font-style: italic;
+}
+
+mark {
+  border-radius: 4px;
+  padding: 1px 4px;
+  color: inherit;
+  cursor: help;
+  transition: background 0.15s ease;
+}
+
+mark.crit {
+  background: var(--mark-crit);
+  border-bottom: 2.5px solid var(--crit);
+}
+
+mark.warn {
+  background: var(--mark-warn);
+  border-bottom: 2.5px dotted var(--warn);
+}
+
+/* Right Pane: Sculptural Scorehead & Verdict */
+.scorehead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 22px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 20px 24px;
+  box-shadow: var(--shadow-sculptural);
+}
+
+.scorenum {
+  font-family: "Instrument Sans", system-ui, sans-serif;
+  font-size: 64px;
+  line-height: 1;
+  font-weight: 700;
+  min-width: 110px;
+  color: var(--ink);
+  letter-spacing: -0.04em;
+}
+
+.scorenum small {
+  font-family: "Instrument Sans", system-ui, sans-serif;
+  font-size: 18px;
+  color: var(--ink3);
+  font-weight: 500;
+  margin-left: 2px;
+}
+
+.verdict {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  gap: 6px;
+}
+
+.verdict .pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Instrument Sans", system-ui, sans-serif;
+  font-size: 11.5px;
+  letter-spacing: 0.1em;
+  padding: 5px 14px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.pill.pass {
+  background: var(--pass-soft);
+  color: var(--pass);
+  border: 1px solid rgba(27, 122, 84, 0.25);
+}
+
+.pill.warn {
+  background: var(--warn-soft);
+  color: var(--warn);
+  border: 1px solid rgba(150, 108, 21, 0.25);
+}
+
+.pill.crit {
+  background: var(--crit-soft);
+  color: var(--crit);
+  border: 1px solid rgba(196, 30, 36, 0.25);
+  box-shadow: var(--shadow-pedestal);
+}
+
+/* Category Structural Bars */
+.cats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.cat {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+}
+
+.cat:hover {
+  border-color: var(--ink3);
+}
+
+.cat .n {
+  font-family: "Instrument Sans", system-ui, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1;
+}
+
+.cat .l {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 4px;
+}
+
+.bar {
+  height: 5px;
+  background: var(--line-soft);
+  border-radius: 4px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.bar i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+/* Violation Findings List */
+.vlist {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.v {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--warn);
+  border-radius: 14px;
+  padding: 12px 16px;
+  font-size: 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.v:hover {
+  transform: translateX(2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.v.crit {
+  border-left-color: var(--crit);
+}
+
+.v .rule {
+  font-family: "Instrument Sans", system-ui, monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--ink3);
+  text-transform: uppercase;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.cap-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: var(--crit-soft);
+  color: var(--crit);
+  border: 1px solid rgba(196, 30, 36, 0.2);
+  text-transform: none;
+}
+
+.cap-badge.warn {
+  background: var(--warn-soft);
+  color: var(--warn);
+  border-color: rgba(150, 108, 21, 0.25);
+}
+
+.cap-law-ref {
+  font-size: 11.5px;
+  color: var(--ink3);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.rewrite-remediations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(27, 122, 84, 0.06);
+  border: 1px solid rgba(27, 122, 84, 0.18);
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.rewrite-remediations-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--pass);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.remediation-pill {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  font-weight: 500;
+}
+
+.remediation-pill b {
+  color: var(--pass);
+  font-weight: 700;
+}
+
+.v .fix {
+  color: var(--ink2);
+  font-size: 13px;
+  margin-top: 5px;
+  line-height: 1.5;
+}
+
+.v .fix b {
+  color: var(--accent);
+}
+
+/* Simulated Sections: Tone Review & Rewrite */
+section.block {
+  margin-top: 26px;
+}
+
+.sim {
+  background: var(--panel);
+  border: 1.5px dashed var(--line);
+  border-radius: 16px;
+  padding: 16px 18px;
+  font-size: 14px;
+  line-height: 1.7;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.simtag {
+  display: inline-block;
+  font-family: "Instrument Sans", system-ui, sans-serif;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid var(--accent-glow);
+  padding: 3px 10px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+/* 3 Rewritten Copy Options Layout */
+.rewrite-options-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.rewrite-nav {
+  display: flex;
+  gap: 8px;
+  background: var(--pit);
+  padding: 4px;
+  border-radius: 24px;
+  border: 1px solid var(--line);
+  width: fit-content;
+}
+
+.rewrite-tab-btn {
+  border: none;
+  background: transparent;
+  font-family: "Instrument Sans", system-ui, sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink2);
+  padding: 6px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: none;
+}
+
+.rewrite-tab-btn:hover {
+  color: var(--ink);
+}
+
+.rewrite-tab-btn.active {
+  background: var(--panel);
+  color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  font-weight: 700;
+}
+
+.rewrite-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+  position: relative;
+  transition: all 0.25s ease;
+}
+
+.rewrite-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.rewrite-card-title {
+  font-family: "Instrument Sans", system-ui, sans-serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rewrite-card-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--pass-soft);
+  color: var(--pass);
+  font-weight: 600;
+}
+
+.rewrite-card-guidelines-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+  border: 1px solid rgba(230, 69, 75, 0.2);
+}
+
+.rewrite-card-dialect-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(77, 201, 156, 0.12);
+  color: var(--pass);
+  font-weight: 600;
+  border: 1px solid rgba(77, 201, 156, 0.25);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.input-stat-tag {
+  font-family: "Instrument Sans", system-ui, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--paper);
+  color: var(--ink3);
+  border: 1px solid var(--line);
+  letter-spacing: 0.02em;
+}
+
+.dialect-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 12px;
+  background: var(--pass-soft);
+  color: var(--pass);
+  border: 1px solid rgba(77, 201, 156, 0.25);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.rewrite-brand-interpretation {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.rewrite-brand-interpretation-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.interpretation-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.interpretation-brand-tag {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink2);
+}
+
+.interpretation-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink);
+  font-style: italic;
+}
+
+.copy-btn {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 4px 12px;
+  font-family: "Instrument Sans", system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink2);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.copy-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.rewrite-card-body {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--ink);
+  white-space: pre-wrap;
+  font-family: "Instrument Sans", system-ui, sans-serif;
+}
+
+.rewrite-loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  color: var(--ink2);
+  font-size: 13.5px;
+  background: var(--panel);
+  border-radius: 16px;
+  border: 1px dashed var(--line);
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--line);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Editable Ruleset Details Accordion */
+details.rules {
+  margin-top: 28px;
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+}
+
+details.rules summary {
+  cursor: pointer;
+  font-family: "Instrument Sans", system-ui, sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  font-weight: 700;
+  transition: color 0.15s ease;
+}
+
+details.rules summary:hover {
+  color: var(--accent);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.chip {
+  font-family: "Instrument Sans", system-ui, monospace;
+  font-size: 12px;
+  background: var(--crit-soft);
+  color: var(--crit);
+  border: 1px solid var(--accent-glow);
+  padding: 4px 10px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.chip button {
+  all: unset;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.chip button:hover {
+  transform: scale(1.2);
+}
+
+.addrow {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.addrow input {
+  flex: 1;
+  background: var(--pit);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 8px 14px;
+  color: var(--ink);
+  font: 14px "Instrument Sans", system-ui, sans-serif;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.addrow input:focus {
+  border-color: var(--accent);
+  background: var(--panel);
+}
+
+/* Brand Guidelines Integration UI */
+.brand-config-btn {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  color: var(--ink2);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-family: "Instrument Sans", system-ui, sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.brand-config-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.brand-badge .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--pass);
+}
+
+.brand-badge.empty-brand .dot {
+  background: var(--ink3);
+}
+
+.brand-badge.custom-brand .dot {
+  background: var(--accent);
+}
+
+.brand-banner {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: var(--shadow-sculptural);
+}
+
+.brand-banner-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.brand-banner-tag {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.brand-banner-tag.active {
+  background: var(--pass-soft);
+  color: var(--pass);
+  border: 1px solid var(--pass);
+}
+
+.brand-banner-tag.none {
+  background: var(--pit);
+  color: var(--ink3);
+  border: 1px solid var(--line);
+}
+
+.brand-banner-text {
+  font-size: 13px;
+  color: var(--ink2);
+  line-height: 1.4;
+}
+
+.brand-banner-text strong {
+  color: var(--ink);
+}
+
+.brand-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.brand-banner-btn {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  padding: 5px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: "Instrument Sans", system-ui, sans-serif;
+  transition: all 0.2s ease;
+}
+
+.brand-banner-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Modal Overlay & Dialog */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(18, 22, 23, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  max-width: 680px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 60px -12px rgba(20, 15, 10, 0.25);
+  overflow: hidden;
+  transform: translateY(16px) scale(0.98);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-overlay.active .modal-card {
+  transform: translateY(0) scale(1);
+}
+
+.modal-head {
+  padding: 24px 28px 18px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.modal-head h3 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-head h3::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.modal-head p {
+  font-size: 13px;
+  color: var(--ink2);
+  margin: 0;
+  line-height: 1.45;
+}
+
+.modal-close {
+  all: unset;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.modal-close:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.modal-body {
+  padding: 24px 28px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.preset-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.preset-btn {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink2);
+  cursor: pointer;
+  font-family: "Instrument Sans", system-ui, sans-serif;
+  transition: all 0.15s ease;
+}
+
+.preset-btn:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.preset-btn.active {
+  background: var(--ink);
+  color: var(--panel);
+  border-color: var(--ink);
+}
+
+.preset-btn.danger-preset:hover {
+  border-color: var(--crit);
+  color: var(--crit);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--ink3);
+}
+
+.form-input {
+  background: var(--pit);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  color: var(--ink);
+  font-family: "Instrument Sans", system-ui, sans-serif;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.form-input:focus {
+  border-color: var(--accent);
+  background: var(--panel);
+}
+
+.form-textarea {
+  background: var(--pit);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink);
+  font-family: "Instrument Sans", system-ui, sans-serif;
+  min-height: 90px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.form-textarea:focus {
+  border-color: var(--accent);
+  background: var(--panel);
+}
+
+.upload-dropzone {
+  border: 1.5px dashed var(--line);
+  border-radius: 14px;
+  background: var(--paper);
+  padding: 18px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.upload-dropzone:hover, .upload-dropzone.dragover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.upload-dropzone p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink2);
+}
+
+.upload-dropzone small {
+  display: block;
+  font-size: 11px;
+  color: var(--ink3);
+  margin-top: 4px;
+}
+
+.modal-foot {
+  padding: 16px 28px 20px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--paper);
+}
+
+.modal-foot .left-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.modal-foot .right-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.foot {
+  padding: 18px 36px;
+  border-top: 1px solid var(--line);
+  font-size: 12.5px;
+  color: var(--ink3);
+  background: var(--paper);
+  line-height: 1.6;
+}
+
+.empty {
+  color: var(--ink3);
+  font-size: 14px;
+  text-align: center;
+  padding: 48px 16px;
+}
+
+/* Subtle custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink3); }
+</style>
+</head>
+
+<body>
+
+<!-- Catenary Arch Watermark in Header -->
 <header>
-  <h1 class="serif">Voice Governor</h1>
+  <svg class="catenary-arch-bg" viewBox="0 0 500 240" aria-hidden="true">
+    <path d="M 0 240 Q 250 -30 500 240" stroke-width="2.5" />
+    <path d="M 50 240 Q 250 20 450 240" stroke-width="1" stroke-dasharray="4 4" />
+    <path d="M 100 240 Q 250 70 400 240" stroke-width="0.75" />
+  </svg>
+
+  <h1>Voice Governor</h1>
   <span class="tag">Prototype</span>
-  <span class="brand">Ruleset: <b>Meridian Payments</b> · demo brand, editable below</span>
+  <span class="brand" id="header_brand_status">Tone: <span id="brand_indicator" class="brand-badge"><span class="dot"></span> <b>Standard Clean</b></span></span>
+  
+  <button class="brand-config-btn" id="open_brand_modal" aria-label="Configure Brand Voice Guidelines">
+    <span>⚙</span> <span>Tone Guidelines</span>
+  </button>
+
+  <button class="theme-toggle-btn" id="theme_toggle" aria-label="Toggle light/dark theme">
+    <span id="theme_icon">◐</span> <span id="theme_label">Terminal Mode</span>
+  </button>
 </header>
 
 <main>
 <div class="pane left">
-  <h2>Content under review</h2>
+  <div class="brand-banner" id="brand_banner">
+    <div class="brand-banner-info">
+      <span class="brand-banner-tag active" id="banner_tag">Active Tone</span>
+      <div class="brand-banner-text" id="banner_desc">
+        Active Guidelines: <strong>Standard Clean</strong> · 10 core banned terms.
+      </div>
+    </div>
+    <div class="brand-banner-actions">
+      <button class="brand-banner-btn" id="banner_switch_btn">Ingest / Change Tone</button>
+      <button class="brand-banner-btn" id="banner_remove_btn" title="Run purely on universal regulatory & clarity rules">Clear Guidelines</button>
+    </div>
+  </div>
+
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+    <h2 style="margin:0">Content under review</h2>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span id="char_counter" class="input-stat-tag">0 words · 0 chars</span>
+      <span id="dialect_tag" class="dialect-tag" style="display:none;" title="UK English detected in draft">🇬🇧 UK English</span>
+    </div>
+  </div>
   <textarea id="input" aria-label="Content to review" placeholder="Paste a draft — an email, a landing-page section, a social post — and press Review."></textarea>
   <div class="btnrow">
     <button class="primary" id="run">Review</button>
@@ -121,11 +1376,11 @@ details.rules summary{cursor:pointer;font-family:ui-monospace,Consolas,monospace
   <h2>Marked-up copy</h2>
   <div class="markup" id="markup"></div>
 
-  <details class="rules">
-    <summary>The ruleset (editable)</summary>
-    <p style="font-size:13px;color:var(--ink2)">Banned vocabulary. Hover a chip's × to remove a term, or add your own. Deterministic checks (sentence length, unevidenced superlatives, exclamation marks, passive voice, reading ease) are fixed in this prototype.</p>
+  <details class="rules" id="rules_details">
+    <summary id="rules_summary">Tone & Lexicon Ruleset (editable)</summary>
+    <p style="font-size:13px;color:var(--ink2)" id="rules_explainer">Brand-specific banned vocabulary. Hover a chip's × to remove a term, or add custom terms. Universal regulatory checks (FCA, CAP, CMA, DMCC) and clarity checks always run in parallel.</p>
     <div class="chips" id="chips"></div>
-    <div class="addrow">
+    <div class="addrow" id="addrow_container">
       <input id="newterm" aria-label="Add banned term" placeholder="Add a banned term…">
       <button id="addterm">Add</button>
     </div>
@@ -138,53 +1393,295 @@ details.rules summary{cursor:pointer;font-family:ui-monospace,Consolas,monospace
 </div>
 </main>
 
-<div class="foot">Rules layer runs live in the browser. The tone review and rewrite are <b>simulated</b> — in production they'd be a model call against the same ruleset. Regulatory checks reference the CAP Code, CMA Green Claims Code, DMCC Act 2024 and FCA rules as pattern triggers only — <b>this is a screening prototype, not legal advice</b>. A production build would route regulatory findings to a qualified reviewer.</div>
+<!-- Tone of Voice Ingestion Modal -->
+<div class="modal-overlay" id="brand_modal" role="dialog" aria-modal="true" aria-labelledby="modal_title">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div>
+        <h3 id="modal_title">Brand Tone of Voice Guidelines</h3>
+        <p>Preload your organization's voice rules, paste natural guidelines or JSON, or run purely unbranded.</p>
+      </div>
+      <button class="modal-close" id="close_brand_modal" aria-label="Close modal">×</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Quick Presets</label>
+        <div class="preset-selector">
+          <button type="button" class="preset-btn active" data-preset="standard">Standard Clean</button>
+          <button type="button" class="preset-btn" data-preset="saarinen">Mid-Century Modernist</button>
+          <button type="button" class="preset-btn" data-preset="fintech">Fintech Compliance</button>
+          <button type="button" class="preset-btn" data-preset="custom">Custom Ingested</button>
+          <button type="button" class="preset-btn danger-preset" data-preset="none">No Guidelines (Raw Screening)</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="brand_name_input">Brand / Organization Name</label>
+        <input type="text" id="brand_name_input" class="form-input" placeholder="e.g., Acme Studio or leave blank for Unbranded">
+      </div>
+
+      <div class="form-group">
+        <label for="brand_principles_input">Core Tone Principles & Voice Stance</label>
+        <textarea id="brand_principles_input" class="form-textarea" placeholder="e.g. Candid, plainspoken, evidence-first. Never boastful. We prefer humble, precise descriptions over hyperbolic buzzwords."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="banned_terms_input">Banned Words & Phrases (comma or newline separated)</label>
+        <textarea id="banned_terms_input" class="form-textarea" style="min-height:70px" placeholder="e.g., passionate, cutting-edge, revolutionary, seamless, empower"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="preferred_terms_input">Preferred Substitutions (term:replacement pairs, one per line)</label>
+        <textarea id="preferred_terms_input" class="form-textarea" style="min-height:70px" placeholder="e.g., leverage:use&#10;empowers:lets&#10;innovative:new"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Ingest from File (Text, Markdown, or JSON)</label>
+        <div class="upload-dropzone" id="file_dropzone">
+          <p>Drop your brand guidelines file here or click to browse</p>
+          <small>Accepts .txt, .md, .json guidelines documents. Automatically extracts banned lexicon and voice principles.</small>
+          <input type="file" id="file_input" accept=".txt,.md,.json" style="display:none">
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <div class="left-actions">
+        <button type="button" class="brand-banner-btn" id="modal_clear_btn" style="color:var(--crit)">Remove Guidelines</button>
+      </div>
+      <div class="right-actions">
+        <button type="button" class="brand-banner-btn" id="modal_cancel_btn">Cancel</button>
+        <button type="button" class="primary" id="modal_apply_btn">Apply & Ingest Tone</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="foot">Rules layer runs live in the browser. The tone review and rewrite adapt dynamically to your <b>active Brand Voice Guidelines</b>, paired with deterministic regulatory screening (CAP Code, CMA Green Claims, DMCC Act 2024, FCA). <b>Screening prototype only, not legal advice.</b></div>
 
 <script>
-const SAMPLE = `We're passionate about delivering world-class payment solutions that leverage cutting-edge AI to transform your business!
+// Built-in Brand Voice Guidelines Presets
+const BRAND_PRESETS = {
+  standard: {
+    id: "standard",
+    name: "Standard Clean",
+    principles: "Direct, plainspoken, and grounded. Reject empty category marketing buzzwords; favor concrete descriptions of value and factual claims.",
+    banned: ["passionate", "world-class", "leverage", "cutting-edge", "seamless", "empower", "empowers", "unlock", "incredible", "robust"],
+    subs: {
+      "leverage": "use",
+      "empowers": "lets",
+      "empower": "let",
+      "seamless": "straightforward",
+      "cutting-edge": "modern",
+      "world-class": "proven",
+      "incredible": "significant",
+      "passionate": "focused"
+    },
+    sampleText: `We're passionate about delivering world-class payment solutions that leverage cutting-edge AI to transform your business!
 
-Our seamless platform empowers teams to unlock incredible growth. Thousands of customers trust Meridian because we offer the most robust and innovative infrastructure in the industry, which is why leading enterprises across a wide range of verticals have chosen to partner with us on their digital transformation journey.
+Our seamless platform empowers teams to unlock incredible growth. Thousands of customers trust our technology because we offer the most robust infrastructure in the industry.
 
 Sign up today — this offer won't last! Get started completely free with guaranteed returns and zero risk. Our eco-friendly, carbon neutral platform is 100% secure.
 
-Settlement takes 2 days.`;
+Settlement takes 2 days.`
+  },
+  saarinen: {
+    id: "saarinen",
+    name: "Mid-Century Modernist",
+    principles: "Organic, sculptural, disciplined, architectural. Inspired by Eero Saarinen's aesthetic: honest materials, structural clarity, functional elegance, and timeless form.",
+    banned: ["disrupt", "game-changer", "hyper-growth", "ninja", "guru", "supercharge", "synergy", "paradigm", "viral", "hustle"],
+    subs: {
+      "disrupt": "refine",
+      "game-changer": "fundamental advance",
+      "supercharge": "strengthen",
+      "synergy": "harmony",
+      "hustle": "craft"
+    },
+    sampleText: `We disrupt the payment industry with our viral, game-changer technology that creates unmatched synergy for high-hustle teams!
 
-// Regulatory rules — pattern, severity, rule code, source, message, fix
+Our paradigm allows you to supercharge transactions effortlessly. Leading enterprises celebrate our breakthrough architectural design.
+
+Act now — this exclusive early access won't last! Join completely free with guaranteed returns and zero risk.`
+  },
+  fintech: {
+    id: "fintech",
+    name: "Fintech Compliance",
+    principles: "Prudent, measured, legally rigorous, and transparent. Every capability must be evidenced; avoid speculative promises, absolute safety statements, or high-pressure conversion tactics.",
+    banned: ["guaranteed", "unhackable", "frictionless", "effortless", "instantaneous", "miracle", "foolproof", "unbeatable", "limitless"],
+    subs: {
+      "guaranteed": "projected",
+      "unhackable": "independently audited",
+      "frictionless": "streamlined",
+      "instantaneous": "near real-time",
+      "foolproof": "tested"
+    },
+    sampleText: `Our foolproof, instantaneous platform delivers guaranteed profits with frictionless onboarding!
+
+Security is unhackable and 100% safe. Thousands of merchants experience limitless revenue from day one.
+
+Sign up today — limited time only! Totally free setup with zero risk.`
+  },
+  none: {
+    id: "none",
+    name: "No Guidelines (Pure Regulatory & Clarity)",
+    principles: "No brand tone of voice applied. Content is evaluated strictly against universal UK advertising regulations (CAP Code, CMA, DMCC Act, FCA) and universal sentence readability metrics.",
+    banned: [],
+    subs: {},
+    sampleText: `We offer a direct platform for processing electronic transactions across modern businesses.
+
+Sign up today — this offer won't last! Get started completely free with guaranteed returns and zero risk. Our eco-friendly, carbon neutral platform is 100% secure.
+
+Settlement takes 2 business days.`
+  }
+};
+
+// State for active brand guidelines
+let activeBrand = {
+  id: "standard",
+  name: "Standard Clean",
+  principles: BRAND_PRESETS.standard.principles,
+  banned: [...BRAND_PRESETS.standard.banned],
+  subs: {...BRAND_PRESETS.standard.subs}
+};
+
+// Regulatory rules — pattern, severity, rule code, source, message, fix, capRule, capSection
 const REG_RULES = [
-  {re:/\b(guaranteed returns?|guaranteed (profit|income|growth))\b/gi, sev:"crit", rule:"REG-01 · financial promotion",
-   src:"FCA COBS 4 / s.21 FSMA", msg:"Promises a financial outcome.",
-   fix:"Financial promotions cannot guarantee returns. Remove, or add the required risk warning and get compliance sign-off."},
-  {re:/\b(risk[- ]?free|zero risk|no risk)\b/gi, sev:"crit", rule:"REG-02 · risk claim",
-   src:"FCA COBS 4.2 (fair, clear, not misleading)", msg:"Claims the product carries no risk.",
-   fix:"Almost nothing is risk-free. State the actual risk position or cut the claim."},
-  {re:/\b(100% (safe|secure)|completely (safe|secure)|totally secure|unhackable)\b/gi, sev:"crit", rule:"REG-03 · absolute security claim",
-   src:"CAP Code 3.1 (misleading advertising); ASA precedent on absolute claims", msg:"Absolute security claims are unprovable and have been ruled misleading.",
-   fix:"State what is actually done: encryption standard, audit, certification."},
-  {re:/\b(completely free|totally free|100% free)\b/gi, sev:"warn", rule:"REG-04 · use of 'free'",
-   src:"CAP Code 3.23–3.26", msg:"'Free' claims need care: the ASA rules against 'free' where any cost or condition applies.",
-   fix:"If any payment, data, or commitment is required, qualify the claim at the point it is made."},
-  {re:/\b(won'?t last|limited time only|act now|today only|last chance|hurry|before it'?s too late|offer ends soon)\b/gi, sev:"crit", rule:"REG-05 · false urgency",
-   src:"DMCC Act 2024 / CPRs banned practice 7 (falsely stating limited availability)", msg:"Urgency claims are unlawful if the deadline or scarcity is not real.",
-   fix:"State the genuine end date and terms, or remove the urgency."},
-  {re:/\b(eco[- ]?friendly|environmentally friendly|green|sustainable|carbon[- ]?neutral|net[- ]?zero|planet[- ]?friendly)\b/gi, sev:"warn", rule:"REG-06 · green claim",
-   src:"CMA Green Claims Code; CAP Code 11", msg:"Environmental claims need substantiation covering the full life cycle.",
-   fix:"Evidence the specific claim (scheme, certification, data) or narrow it to what is provable."},
-  {re:/\b(clinically proven|doctor recommended|scientifically proven)\b/gi, sev:"crit", rule:"REG-07 · proof claim",
-   src:"CAP Code 3.7 (substantiation); 12 (medicines & health)", msg:"Claims of proof require documentary evidence held before publication.",
-   fix:"Hold the substantiation file first, cite it, or remove the claim."},
-  {re:/\b(no purchase necessary|winners? (will be|are) (chosen|selected))\b/gi, sev:"warn", rule:"REG-08 · promotion terms",
-   src:"CAP Code 8 (promotional marketing)", msg:"Prize promotions carry significant-conditions requirements.",
-   fix:"Publish full terms: closing date, eligibility, prize details, judging."}
+  // --- CAP Code §3 Substantiation & Misleading Advertising ---
+  {
+    re: /\b(clinically proven|scientifically proven|doctor recommended|medically tested|laboratory proven)\b/gi,
+    sev: "crit",
+    rule: "CAP 3.7 · Substantiation & Evidence",
+    capRule: "Rule 3.7",
+    capSection: "3.7 Documentary Evidence",
+    src: "CAP Code Rule 3.7 / ASA Guidance",
+    msg: "Objective proof claim requiring pre-publication documentary substantiation.",
+    fix: "Under Rule 3.7, you must hold rigorous documentary evidence before publication. Either cite the specific clinical trial/certification or narrow the claim to verified facts."
+  },
+  {
+    re: /\b(100% (safe|secure)|completely (safe|secure)|totally secure|unhackable|zero defect|100% reliable)\b/gi,
+    sev: "crit",
+    rule: "CAP 3.1 / 3.8 · Absolute Security Claim",
+    capRule: "Rule 3.1 & 3.8",
+    capSection: "3.1 Misleading Advertising & 3.8 Evidence Adequacy",
+    src: "CAP Code Rule 3.1 & 3.8 / ASA Precedent",
+    msg: "Absolute claim that consumers interpret as infallible guarantee, which cannot be substantiated.",
+    fix: "The ASA judges claims against consumer perception (Rule 3.8). Remove absolute terms; state audited standards (e.g. 'audited 256-bit encryption', 'SOC-2 compliant')."
+  },
+  {
+    re: /\b(guaranteed returns?|guaranteed (profit|income|growth))\b/gi,
+    sev: "crit",
+    rule: "CAP 3.1 / FCA COBS 4 · Guaranteed Financial Returns",
+    capRule: "Rule 3.1",
+    capSection: "3.1 Misleading Claims / Financial Promotions",
+    src: "CAP Code Rule 3.1 / FCA COBS 4 / s.21 FSMA",
+    msg: "Guarantees a financial return or profit.",
+    fix: "Financial outcomes cannot guarantee returns without breaching FCA rules and CAP Rule 3.1. Replace with factual descriptions or audited historical performance with prominent risk disclosures."
+  },
+  {
+    re: /\b(risk[- ]?free|zero risk|no risk)\b/gi,
+    sev: "crit",
+    rule: "CAP 3.1 / FCA 4.2 · Risk-Free Claim",
+    capRule: "Rule 3.1",
+    capSection: "3.1 Misleading Advertising & Risk Disclosures",
+    src: "CAP Code Rule 3.1 / FCA COBS 4.2",
+    msg: "States or implies the product carries zero risk.",
+    fix: "Commercial products and investments are never risk-free. State the specific protection mechanism or remove the claim."
+  },
+  {
+    re: /\b(completely free|totally free|100% free|entirely free)\b/gi,
+    sev: "warn",
+    rule: "CAP 3.23 · Use of 'Free'",
+    capRule: "Rule 3.23",
+    capSection: "3.23–3.26 Use of 'Free'",
+    src: "CAP Code Rule 3.23–3.26",
+    msg: "Unqualified 'free' claim where conditions, paid tiers, or commitments apply.",
+    fix: "Rule 3.23 prohibits describing an item as 'free' if consumers must pay anything beyond unavoidable costs. Specify exact scope (e.g. 'Free standard account, transparent fees for premium features')."
+  },
+  {
+    re: /\b(won'?t last|limited time only|act now|today only|last chance|hurry|before it'?s too late|offer ends soon)\b/gi,
+    sev: "crit",
+    rule: "CAP 3.1 / DMCC · False Scarcity & Urgency",
+    capRule: "Rule 3.1",
+    capSection: "3.1 Misleadingness & DMCC Banned Practice 7",
+    src: "CAP Code Rule 3.1 / DMCC Act 2024",
+    msg: "Urgency claim implying restricted availability or deadline.",
+    fix: "Stating availability is limited when it is not is a banned unfair commercial practice. State the genuine end date/terms or remove artificial urgency."
+  },
+
+  // --- CAP Code §3.33 Comparisons with Competitors ---
+  {
+    re: /\b(better than (all|any|our)? competitors|beating (all|any)? competitors|cheaper than all others|faster than (the competition|any other)|outperforms (all|every) (other|competitor))\b/gi,
+    sev: "crit",
+    rule: "CAP 3.33 · Identifiable Competitor Comparison",
+    capRule: "Rule 3.33",
+    capSection: "3.33 Comparisons with Identifiable Competitors",
+    src: "CAP Code Rule 3.33 / ASA Comparative Guidance",
+    msg: "Comparative superiority claim against identifiable competitors without verifiable basis.",
+    fix: "Rule 3.33 requires comparisons to compare like-with-like objectively, refrain from discrediting competitors, and provide verifiable consumer evidence. Clearly state comparative metrics and signpost verifiable source."
+  },
+  {
+    re: /\b(unlike (other|traditional|legacy|rival) (banks|providers|platforms|tools|solutions|competitors)|unlike the competition)\b/gi,
+    sev: "warn",
+    rule: "CAP 3.33 · Comparative Market Denigration",
+    capRule: "Rule 3.33",
+    capSection: "3.33 Comparative Objectivity & Verification",
+    src: "CAP Code Rule 3.33",
+    msg: "Blanket comparative claim contrasting against industry rivals.",
+    fix: "Ensure the comparison evaluates meeting the same need, is based on verifiable facts, and does not unfairly disparage (Rule 3.33). State your specific offering objectively."
+  },
+
+  // --- CAP Code §3.33 / CAP 11 Environmental Claims ---
+  {
+    re: /\b(carbon[- ]?neutral|net[- ]?zero|100% green|zero[- ]?carbon|climate[- ]?neutral)\b/gi,
+    sev: "crit",
+    rule: "CAP 3.33 / 11 · Absolute Environmental Claim",
+    capRule: "Rule 3.33 (Env)",
+    capSection: "3.33 Environmental Life-Cycle & Offsetting",
+    src: "CAP Code Rule 3.33 / CMA Green Claims / ASA 2023 Guidance",
+    msg: "Absolute carbon or climate claim requiring full life-cycle substantiation and offset disclosure.",
+    fix: "ASA Guidance requires absolute claims ('carbon neutral', 'net zero') to substantiate the entire product life-cycle and specify whether achieved through direct reduction or offsetting (with verifiable standard cited)."
+  },
+  {
+    re: /\b(eco[- ]?friendly|environmentally friendly|planet[- ]?friendly|greenest|sustainable|nature[- ]?positive)\b/gi,
+    sev: "warn",
+    rule: "CAP 3.33 / 11 · Broad Green Claim",
+    capRule: "Rule 3.33 (Env)",
+    capSection: "3.33 Environmental Claims & CMA Code",
+    src: "CAP Code Rule 3.33 / CMA Green Claims Code",
+    msg: "Broad, unqualified environmental descriptor likely to mislead on life-cycle scope.",
+    fix: "Under ASA Guidance, broad green terms must be narrowly qualified to the exact life-cycle phase (e.g. 'manufactured using 100% renewable electricity' rather than 'eco-friendly')."
+  },
+  {
+    re: /\b(100% recyclable|completely recyclable|infinitely recyclable|zero waste)\b/gi,
+    sev: "warn",
+    rule: "CAP 3.33 / 11 · Recyclability & Waste Claim",
+    capRule: "Rule 3.33 (Env)",
+    capSection: "3.33 Recyclability & Infrastructure",
+    src: "CAP Code Rule 3.33 / ASA Guidance on Waste Claims",
+    msg: "Recyclability claim requiring practical consumer infrastructure substantiation.",
+    fix: "Under Rule 3.33, recyclability claims must not mislead if local authority collection is limited. Clarify parts that are recyclable and how consumers can recycle them (e.g. 'bottle 100% recyclable, excluding cap')."
+  },
+
+  // --- Promotional terms & health ---
+  {
+    re: /\b(no purchase necessary|winners? (will be|are) (chosen|selected))\b/gi,
+    sev: "warn",
+    rule: "CAP 8 · Prize Promotions & Significant Terms",
+    capRule: "Rule 8.17",
+    capSection: "8.17 Promotional Marketing Terms",
+    src: "CAP Code Section 8 (Promotional Marketing)",
+    msg: "Prize promotion reference lacking immediate disclosure of significant conditions.",
+    fix: "CAP Rule 8.17 mandates displaying significant terms (closing date, entry restrictions, prize details) at the point of communication."
+  }
 ];
 
-let banned = ["passionate","world-class","leverage","cutting-edge","seamless","empower","empowers","unlock","incredible","robust","innovative","game-changer","disrupt","best-in-class","solutions","solution","journey","transform","synergy","next-level","elevate"];
-const SUBS = {"leverage":"use","utilise":"use","utilize":"use","empowers":"lets","empower":"let","seamless":"works without manual steps","solutions":"products","solution":"product","transform":"change","journey":"process","robust":"tested","innovative":"new","cutting-edge":"current","world-class":"(state the measurable claim)","incredible":"(state the number)","passionate":"(cut — show the work instead)"};
 const SUPERLATIVES = /\b(most|best|leading|fastest|largest|#1|number one|top)\b/gi;
 const HAS_EVIDENCE = /\d|%|\bper\b|according to|source|study|n=/i;
 
 const $ = id => document.getElementById(id);
 
-function esc(s){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
 
 function splitSentences(t){return t.split(/(?<=[.!?])\s+/).filter(s=>s.trim().length)}
 
@@ -195,149 +1692,1062 @@ function flesch(t){
   return Math.round(206.835-1.015*(words.length/sents)-84.6*(syl/words.length));
 }
 
+function updateBrandUI(){
+  const hasBrand = activeBrand.id !== "none" && (activeBrand.banned.length > 0 || (activeBrand.name && activeBrand.name !== "Unbranded"));
+  
+  // Header status indicator
+  if(!hasBrand || activeBrand.id === "none"){
+    $("brand_indicator").className = "brand-badge empty-brand";
+    $("brand_indicator").innerHTML = `<span class="dot"></span> <b>Unbranded</b> · pure regulatory screening`;
+  } else {
+    const isCustom = activeBrand.id === "custom";
+    $("brand_indicator").className = `brand-badge ${isCustom ? "custom-brand" : ""}`;
+    $("brand_indicator").innerHTML = `<span class="dot"></span> <b>${esc(activeBrand.name)}</b>`;
+  }
+
+  // Left pane banner
+  if(!hasBrand || activeBrand.id === "none"){
+    $("banner_tag").className = "brand-banner-tag none";
+    $("banner_tag").textContent = "No Guidelines";
+    $("banner_desc").innerHTML = "<strong>Unbranded Mode</strong>: Screening strictly for universal regulatory compliance (FCA, CAP, CMA, DMCC) and clarity.";
+    $("banner_remove_btn").style.display = "none";
+    $("rules_details").style.display = "none";
+  } else {
+    $("banner_tag").className = "brand-banner-tag active";
+    $("banner_tag").textContent = "Active Tone";
+    $("banner_desc").innerHTML = `Active Guidelines: <strong>${esc(activeBrand.name)}</strong> · ${activeBrand.banned.length} tone rule${activeBrand.banned.length===1?"":"s"}.`;
+    $("banner_remove_btn").style.display = "inline-block";
+    $("rules_details").style.display = "block";
+    $("rules_summary").textContent = `${activeBrand.name} Lexicon Rules (${activeBrand.banned.length} terms)`;
+  }
+
+  drawChips();
+}
+
 function review(text){
   const v=[]; // {sev, rule, text, msg, fix, cat}
-  // Banned lexicon
-  for(const term of banned){
-    const re=new RegExp("\\b"+term.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\b","gi");
-    let m; while((m=re.exec(text))){
-      v.push({sev:"crit",cat:"lexicon",rule:"LEX-01 · banned term",text:m[0],idx:m.index,len:m[0].length,
-        msg:`"${m[0]}" is on the banned list.`,
-        fix:SUBS[term]?`Substitute: ${SUBS[term]}`:"Cut it, or replace with a specific claim."});
+  
+  // Brand Banned lexicon (only if activeBrand has banned terms)
+  if(activeBrand.id !== "none" && activeBrand.banned.length > 0){
+    for(const term of activeBrand.banned){
+      if(!term || !term.trim()) continue;
+      const re=new RegExp("\\b"+term.trim().replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\b","gi");
+      let m;
+      while((m=re.exec(text))){
+        const replacement = activeBrand.subs[term.toLowerCase()];
+        v.push({
+          sev:"crit", 
+          cat:"lexicon", 
+          rule:`TONE · ${activeBrand.name || "Brand Voice"}`,
+          text:m[0], 
+          idx:m.index, 
+          len:m[0].length,
+          msg:`"${m[0]}" departs from ${activeBrand.name || "brand"} voice standards.`,
+          fix:replacement ? `Use "${replacement}" instead.` : "Remove or express with objective, evidence-backed details."
+        });
+      }
     }
   }
-  // Sentences
-  const sents=splitSentences(text); let pos=0;
+
+  // Sentences & structure
+  const sents=splitSentences(text);
+  let pos=0;
   for(const s of sents){
     const idx=text.indexOf(s,pos); pos=idx+s.length;
     const wc=(s.match(/\S+/g)||[]).length;
-    if(wc>30) v.push({sev:"warn",cat:"clarity",rule:"CLR-01 · long sentence",text:s,idx,len:s.length,
-      msg:`${wc} words in one sentence.`,fix:"Break it into two. Aim under 25 words."});
+    if(wc>30){
+      v.push({sev:"warn", cat:"clarity", rule:"CLR-01 · long sentence",
+        text:s, idx, len:s.length,
+        msg:`${wc} words in one sentence.`,
+        fix:"Split into two. Target under 25 words."});
+    }
     if(SUPERLATIVES.test(s) && !HAS_EVIDENCE.test(s)){
       SUPERLATIVES.lastIndex=0;
-      v.push({sev:"crit",cat:"claims",rule:"CLM-01 · unevidenced superlative",text:s,idx,len:s.length,
-        msg:"A superlative claim with no number or source beside it.",fix:"Add the figure and its source, or remove the claim."});
+      v.push({sev:"crit", cat:"claims", rule:"CLM-01 · unevidenced superlative",
+        text:s, idx, len:s.length,
+        msg:"Superlative with no adjacent proof.",
+        fix:"Add evidence (a stat, a source, a study) or delete the claim."});
     }
     SUPERLATIVES.lastIndex=0;
-    if(/\b(is|are|was|were|been|being|be)\s+\w+ed\b/.test(s))
-      v.push({sev:"warn",cat:"clarity",rule:"CLR-02 · passive voice",text:s,idx,len:s.length,
-        msg:"Likely passive construction.",fix:"Name who does the action."});
-  }
-  // Regulatory
-  for(const R of REG_RULES){
-    R.re.lastIndex=0; let mm;
-    while((mm=R.re.exec(text))){
-      v.push({sev:R.sev,cat:"regulatory",rule:R.rule,src:R.src,text:mm[0],idx:mm.index,len:mm[0].length,
-        msg:`"${mm[0]}" — ${R.msg}`,fix:R.fix});
+    if(/\b(is|are|was|were|been|being|be)\s+\w+ed\b/.test(s)){
+      v.push({sev:"warn", cat:"clarity", rule:"CLR-02 · passive voice",
+        text:s, idx, len:s.length,
+        msg:"Likely passive voice.",
+        fix:"Name the actor: who does this?"});
     }
   }
+
+  // Regulatory
+  for(const R of REG_RULES){
+    R.re.lastIndex=0;
+    let m;
+    while((m=R.re.exec(text))){
+      v.push({sev:R.sev, cat:"regulatory", rule:R.rule,
+        capRule: R.capRule || null,
+        capSection: R.capSection || null,
+        src: R.src || null,
+        text:m[0], idx:m.index, len:m[0].length,
+        msg:`"${m[0]}" — ${R.msg} (${R.src})`,
+        fix:R.fix});
+    }
+  }
+
   // Mechanics
-  let m; const ex=/!/g;
-  while((m=ex.exec(text))) v.push({sev:"warn",cat:"mechanics",rule:"MEC-01 · exclamation",text:"!",idx:m.index,len:1,
-    msg:"Exclamation mark.",fix:"The claim should carry the emphasis. Use a full stop."});
+  let m;
+  const ex=/!/g;
+  while((m=ex.exec(text))){
+    v.push({sev:"warn", cat:"mechanics", rule:"MEC-01 · exclamation mark",
+      text:"!", idx:m.index, len:1,
+      msg:"Exclamation mark.",
+      fix:"Let the facts do the work. End with a full stop."});
+  }
   const caps=/\b[A-Z]{4,}\b/g;
-  while((m=caps.exec(text))) v.push({sev:"warn",cat:"mechanics",rule:"MEC-02 · shouting caps",text:m[0],idx:m.index,len:m[0].length,
-    msg:`"${m[0]}" is set in caps.`,fix:"Sentence case unless it's a label or an acronym."});
+  while((m=caps.exec(text))){
+    v.push({sev:"warn", cat:"mechanics", rule:"MEC-02 · all-caps shouting",
+      text:m[0], idx:m.index, len:m[0].length,
+      msg:`"${m[0]}" is capitalized.`,
+      fix:"Use sentence case unless it's a recognised acronym."});
+  }
+
   const fl=flesch(text);
-  return {v,fl,sents:sents.length};
+  return {v, fl, sents:sents.length};
 }
 
 function score(r){
-  const pen={lexicon:0,claims:0,clarity:0,mechanics:0,regulatory:0};
-  for(const x of r.v) pen[x.cat]+= x.sev==="crit"?8:3;
+  const hasTone = activeBrand.id !== "none" && activeBrand.banned.length > 0;
+  const pen={lexicon:0, claims:0, clarity:0, mechanics:0, regulatory:0};
+  for(const x of r.v){
+    pen[x.cat] += x.sev==="crit"?8:3;
+  }
+  
   const cats={
-    lexicon:Math.max(0,100-pen.lexicon*2),
-    claims:Math.max(0,100-pen.claims*2.5),
-    clarity:Math.max(0,Math.min(100, (r.fl<50? r.fl+30 : 100) - pen.clarity)),
-    mechanics:Math.max(0,100-pen.mechanics*3),
-    regulatory:Math.max(0,100-pen.regulatory*3)
+    regulatory: Math.max(0, 100 - pen.regulatory*3),
+    lexicon:    hasTone ? Math.max(0, 100 - pen.lexicon*2) : 100,
+    claims:     Math.max(0, 100 - pen.claims*2.5),
+    clarity:    Math.max(0, Math.min(100, (r.fl<50?r.fl+30:100) - pen.clarity)),
+    mechanics:  Math.max(0, 100 - pen.mechanics*3)
   };
-  const total=Math.round(cats.regulatory*.3+cats.lexicon*.25+cats.claims*.2+cats.clarity*.15+cats.mechanics*.1);
+
+  let total;
+  if(hasTone){
+    total = Math.round(cats.regulatory*.3 + cats.lexicon*.25 + cats.claims*.2 + cats.clarity*.15 + cats.mechanics*.1);
+  } else {
+    // Rebalance weights when brand tone is disabled
+    total = Math.round(cats.regulatory*.4 + cats.claims*.3 + cats.clarity*.2 + cats.mechanics*.1);
+  }
+
   const regBlock=r.v.some(x=>x.cat==="regulatory"&&x.sev==="crit");
-  return {total,cats,regBlock};
+  return {total, cats, regBlock, hasTone};
+}
+
+function tonePass(r, s){
+  const lines=[];
+  const hasTone = activeBrand.id !== "none" && activeBrand.banned.length > 0;
+  
+  if(hasTone){
+    if(s.cats.lexicon < 70) {
+      lines.push(`Contains multiple terms violating ${activeBrand.name} voice principles. ${activeBrand.principles || "Avoid promotional cliches and stay true to your stated brand stance."}`);
+    } else if(s.cats.lexicon < 90) {
+      lines.push(`Generally aligns with ${activeBrand.name} tone, though minor terminology adjustments are advised.`);
+    } else {
+      lines.push(`Exemplary adherence to ${activeBrand.name} tone guidelines.`);
+    }
+  } else {
+    lines.push("Unbranded mode: No brand tone constraints applied. Evaluating strictly for factual clarity and legal compliance.");
+  }
+
+  if(s.cats.claims<80) {
+    lines.push("Superlatives are unevidenced. Statements claiming top ranking or unique supremacy require pre-existing documentary substantiation under advertising standards.");
+  }
+
+  if(r.fl<50) {
+    lines.push(`Reading ease is low (${r.fl}/100). The draft is sentence-heavy and complex. Shorten clauses and simplify syntax.`);
+  } else {
+    lines.push(`Reading ease is strong (${r.fl}/100). Syntactic structure is clear and readable.`);
+  }
+
+  return lines;
 }
 
 function rewrite(text){
-  let out=text;
-  for(const [k,sub] of Object.entries(SUBS)){
-    out=out.replace(new RegExp("\\b"+k+"\\b","gi"),sub);
+  let t=text;
+  if(activeBrand.subs && Object.keys(activeBrand.subs).length > 0){
+    for(const [k,v] of Object.entries(activeBrand.subs)){
+      t=t.replace(new RegExp('\\b'+k+'\\b','gi'), v);
+    }
   }
-  out=out.replace(/!/g,".");
-  return out;
+  t=t.replace(/!+/g, '.');
+  return t;
 }
 
-function tonePass(r,s){
-  const lines=[];
-  if(s.cats.lexicon<70) lines.push("The draft leans on category vocabulary — the same words a competitor would use. It describes the market, not this brand.");
-  if(s.cats.claims<80) lines.push("Superlatives appear without evidence beside them. Each big claim needs a figure and a source, or it should go.");
-  if(r.fl<50) lines.push(`Reading ease is ${r.fl} (target 60–70). Shorter sentences and plainer words would fix most of it.`);
-  else lines.push(`Reading ease is ${r.fl} — inside the 60–70 target once the flagged sentences are broken up.`);
-  if(!lines.length) lines.push("Tone is close to the guide. Nothing material to raise.");
-  return lines;
+// UK English Dictionary and Localisation Utilities
+const UK_SPELLING_MAP = [
+  [/\bcolor\b/gi, 'colour'],
+  [/\bcolors\b/gi, 'colours'],
+  [/\bcolored\b/gi, 'coloured'],
+  [/\bcoloring\b/gi, 'colouring'],
+  [/\bhonor\b/gi, 'honour'],
+  [/\bhonors\b/gi, 'honours'],
+  [/\bhonored\b/gi, 'honoured'],
+  [/\blabor\b/gi, 'labour'],
+  [/\blabors\b/gi, 'labours'],
+  [/\bflavor\b/gi, 'flavour'],
+  [/\bflavors\b/gi, 'flavours'],
+  [/\bfavor\b/gi, 'favour'],
+  [/\bfavors\b/gi, 'favours'],
+  [/\bfavored\b/gi, 'favoured'],
+  [/\bfavorite\b/gi, 'favourite'],
+  [/\bfavorites\b/gi, 'favourites'],
+  [/\bbehavior\b/gi, 'behaviour'],
+  [/\bbehaviors\b/gi, 'behaviours'],
+  [/\bneighbor\b/gi, 'neighbour'],
+  [/\bneighbors\b/gi, 'neighbours'],
+  [/\bneighborhood\b/gi, 'neighbourhood'],
+  [/\bcenter\b/gi, 'centre'],
+  [/\bcenters\b/gi, 'centres'],
+  [/\bcentered\b/gi, 'centred'],
+  [/\btheater\b/gi, 'theatre'],
+  [/\btheaters\b/gi, 'theatres'],
+  [/\bmeter\b/gi, 'metre'],
+  [/\bmeters\b/gi, 'metres'],
+  [/\bfiber\b/gi, 'fibre'],
+  [/\bfibers\b/gi, 'fibres'],
+  [/\bdefense\b/gi, 'defence'],
+  [/\bdefenses\b/gi, 'defences'],
+  [/\boffense\b/gi, 'offence'],
+  [/\boffenses\b/gi, 'offences'],
+  [/\blicense (agreement|fee|holder|number|plate|renewal|requirement)\b/gi, 'licence $1'],
+  [/\b(a|the|our|your|merchant|banking|operating|software) license\b/gi, '$1 licence'],
+  [/\bcanceled\b/gi, 'cancelled'],
+  [/\bcanceling\b/gi, 'cancelling'],
+  [/\btraveling\b/gi, 'travelling'],
+  [/\btraveled\b/gi, 'travelled'],
+  [/\btraveler\b/gi, 'traveller'],
+  [/\btravelers\b/gi, 'travellers'],
+  [/\bmodeling\b/gi, 'modelling'],
+  [/\bmodeled\b/gi, 'modelled'],
+  [/\bleveling\b/gi, 'levelling'],
+  [/\benrollment\b/gi, 'enrolment'],
+  [/\benrollments\b/gi, 'enrolments'],
+  [/\bfulfill\b/gi, 'fulfil'],
+  [/\bprogram\b/gi, 'programme'],
+  [/\bprograms\b/gi, 'programmes'],
+  [/\boptimize\b/gi, 'optimise'],
+  [/\boptimizes\b/gi, 'optimises'],
+  [/\boptimized\b/gi, 'optimised'],
+  [/\boptimizing\b/gi, 'optimising'],
+  [/\boptimization\b/gi, 'optimisation'],
+  [/\boptimizations\b/gi, 'optimisations'],
+  [/\borganize\b/gi, 'organise'],
+  [/\borganizes\b/gi, 'organises'],
+  [/\borganized\b/gi, 'organised'],
+  [/\borganizing\b/gi, 'organising'],
+  [/\borganization\b/gi, 'organisation'],
+  [/\borganizations\b/gi, 'organisations'],
+  [/\borganizational\b/gi, 'organisational'],
+  [/\bprioritize\b/gi, 'prioritise'],
+  [/\bprioritizes\b/gi, 'prioritises'],
+  [/\bprioritized\b/gi, 'prioritised'],
+  [/\bprioritizing\b/gi, 'prioritising'],
+  [/\bprioritization\b/gi, 'prioritisation'],
+  [/\bcustomize\b/gi, 'customise'],
+  [/\bcustomizes\b/gi, 'customises'],
+  [/\bcustomized\b/gi, 'customised'],
+  [/\bcustomizing\b/gi, 'customising'],
+  [/\bcustomization\b/gi, 'customisation'],
+  [/\bcustomizations\b/gi, 'customisations'],
+  [/\brealize\b/gi, 'realise'],
+  [/\brealizes\b/gi, 'realises'],
+  [/\brealized\b/gi, 'realised'],
+  [/\brealizing\b/gi, 'realising'],
+  [/\brecognize\b/gi, 'recognise'],
+  [/\brecognizes\b/gi, 'recognises'],
+  [/\brecognized\b/gi, 'recognised'],
+  [/\banalyze\b/gi, 'analyse'],
+  [/\banalyzes\b/gi, 'analyses'],
+  [/\banalyzed\b/gi, 'analysed'],
+  [/\banalyzing\b/gi, 'analysing'],
+  [/\bauthorize\b/gi, 'authorise'],
+  [/\bauthorizes\b/gi, 'authorises'],
+  [/\bauthorized\b/gi, 'authorised'],
+  [/\bauthorizing\b/gi, 'authorising'],
+  [/\bauthorization\b/gi, 'authorisation'],
+  [/\bstandardize\b/gi, 'standardise'],
+  [/\bstandardizes\b/gi, 'standardises'],
+  [/\bstandardized\b/gi, 'standardised'],
+  [/\bstandardizing\b/gi, 'standardising'],
+  [/\bstandardization\b/gi, 'standardisation'],
+  [/\bspecialize\b/gi, 'specialise'],
+  [/\bspecializes\b/gi, 'specialises'],
+  [/\bspecialized\b/gi, 'specialised'],
+  [/\bspecializing\b/gi, 'specialising'],
+  [/\bspecialization\b/gi, 'specialisation'],
+  [/\bmaximize\b/gi, 'maximise'],
+  [/\bmaximized\b/gi, 'maximised'],
+  [/\bminimize\b/gi, 'minimise'],
+  [/\bminimized\b/gi, 'minimised'],
+  [/\bcapitalized\b/gi, 'capitalised'],
+  [/\bcentralized\b/gi, 'centralised'],
+  [/\bmonetize\b/gi, 'monetise'],
+  [/\bmonetized\b/gi, 'monetised'],
+  [/\bcatalog\b/gi, 'catalogue'],
+  [/\bdialog\b/gi, 'dialogue'],
+  [/\bpercent\b/gi, 'per cent']
+];
+
+function convertToUKEnglish(text) {
+  if (!text) return text;
+  let res = text;
+  for (const [pattern, replacement] of UK_SPELLING_MAP) {
+    res = res.replace(pattern, (match) => {
+      if (match[0] === match[0].toUpperCase() && match[0] !== match[0].toLowerCase()) {
+        return replacement.charAt(0).toUpperCase() + replacement.slice(1);
+      }
+      return replacement;
+    });
+  }
+  return res;
+}
+
+function detectUKEnglish(text = '', brandName = '', brandPrinciples = '', brandGuidelines = '') {
+  const sample = `${text} ${brandName} ${brandPrinciples} ${brandGuidelines}`.toLowerCase();
+  const ukPatterns = [
+    /\b(colour|colours|coloured|colouring|honour|honours|honoured|honouring|labour|labours|laboured|neighbour|neighbours|neighbourhood|neighbourhoods|flavour|flavours|flavoured|favour|favours|favoured|favourite|favourites|harbour|harbours|rumour|rumours|humour|humorous|splendour|vigour|glamour|behaviour|behaviours)\b/i,
+    /\b(organise|organised|organises|organising|organisation|organisations|organisational|prioritise|prioritised|prioritises|prioritising|prioritisation|customise|customised|customises|customising|customisation|customisations|optimise|optimised|optimises|optimising|optimisation|minimise|minimised|minimises|minimising|realise|realised|realises|realising|specialise|specialised|specialises|specialising|specialisation|recognise|recognised|recognises|recognising|analyse|analysed|analyses|analysing|authorise|authorised|authorises|authorising|authorisation|maximise|maximised|maximises|maximising|standardise|standardised|standardising|standardisation|initialise|initialised|initialises|initialising|emphasise|emphasised|emphasising|synthesise|synthesised|scrutinise|scrutinised|capitalise|capitalised|centralise|centralised|monetise|monetised)\b/i,
+    /\b(centre|centres|centred|centring|theatre|theatres|metre|metres|fibre|fibres|calibre|sombre|litre|litres)\b/i,
+    /\b(travelling|travelled|traveller|travellers|cancelling|cancelled|cancellation|cancellations|levelling|levelled|modelling|modelled|signalling|signalled|fulfil|enrol|enrolment|skilful)\b/i,
+    /\b(defence|defences|offence|offences|pretence|licence|licences)\b/i,
+    /\b(catalogue|catalogues|dialogue|dialogues|analogue|analogues)\b/i,
+    /\b(whilst|amongst|learnt|spelt|dreamt|cheque|cheques|programme|programmes|aeroplane|aeroplanes|tyre|tyres|grey|greyer|greyest|per cent|fca|fca-regulated|bank of england|hmrc)\b/i,
+    /[£]\s*\d+|\b(gbp|pounds? sterling|pence)\b/i
+  ];
+  return ukPatterns.some(rx => rx.test(sample));
+}
+
+let currentIsUK = false;
+
+function updateDialectBadge(text){
+  const isUK = detectUKEnglish(text, activeBrand ? activeBrand.name : '', activeBrand ? activeBrand.principles : '', activeBrand ? activeBrand.fullGuidelines : '');
+  currentIsUK = isUK;
+  const tag = $("dialect_tag");
+  if(tag){
+    tag.style.display = isUK ? "inline-flex" : "none";
+  }
+  const counter = $("char_counter");
+  if(counter){
+    const chars = text ? text.length : 0;
+    const words = text ? (text.trim().match(/\S+/g) || []).length : 0;
+    counter.textContent = `${words} word${words===1?'':'s'} · ${chars.toLocaleString()} char${chars===1?'':'s'}`;
+  }
+}
+
+let lastReviewedText = "";
+let currentActiveOptionTab = 1;
+let cachedRewrites = null;
+
+let currentFindings = [];
+
+async function fetchRewrites(text, findings){
+  const container = $("rewrite_options_container");
+  if(!container) return;
+
+  currentFindings = Array.isArray(findings) ? findings : [];
+  const isUK = detectUKEnglish(text, activeBrand ? activeBrand.name : '', activeBrand ? activeBrand.principles : '', activeBrand ? activeBrand.fullGuidelines : '');
+  currentIsUK = isUK;
+  updateDialectBadge(text);
+
+  const hasBrand = activeBrand && activeBrand.id !== 'none';
+  const brandLabel = hasBrand ? ` interpreting ${esc(activeBrand.name)} guidelines…` : ` across distinct professional styles…`;
+  container.innerHTML = `
+    <div class="rewrite-loading">
+      <div class="spinner"></div>
+      <span>Synthesizing 3 compliant copy rewrites${brandLabel}${isUK ? ' (preserving UK English)' : ''}</span>
+    </div>
+  `;
+
+  try {
+    const res = await fetch('/api/rewrite', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        text,
+        findings,
+        isUK,
+        brandName: hasBrand ? activeBrand.name : '',
+        brandPrinciples: activeBrand.principles || '',
+        brandGuidelines: activeBrand.fullGuidelines || activeBrand.principles || '',
+        banned: activeBrand.banned || [],
+        subs: activeBrand.subs || {},
+        isUploadedGuidelines: !!(activeBrand.fullGuidelines || activeBrand.isUploaded)
+      })
+    });
+
+    const data = await res.json();
+    if(data && data.success && Array.isArray(data.options) && data.options.length >= 3){
+      if(data.isUK !== undefined) currentIsUK = data.isUK;
+      cachedRewrites = data.options;
+      if(currentIsUK){
+        cachedRewrites.forEach(o => {
+          o.copy = convertToUKEnglish(o.copy);
+          o.brandInterpretation = convertToUKEnglish(o.brandInterpretation);
+        });
+      }
+      renderRewriteOptions(cachedRewrites, currentActiveOptionTab);
+    } else {
+      renderFallbackRewriteOptions(text);
+    }
+  } catch(err) {
+    console.error('Failed to fetch rewrite options:', err);
+    renderFallbackRewriteOptions(text);
+  }
+}
+
+function renderRewriteOptions(options, activeIndex = 1){
+  const container = $("rewrite_options_container");
+  if(!container) return;
+
+  const tabsHtml = options.map((opt, i) => {
+    const idx = i + 1;
+    return `
+      <button type="button" class="rewrite-tab-btn ${idx === activeIndex ? 'active' : ''}" data-opt="${idx}">
+        Option ${idx}
+      </button>
+    `;
+  }).join("");
+
+  const activeOpt = options.find(o => o.option === activeIndex) || options[0];
+  const hasBrand = activeBrand && activeBrand.id !== 'none';
+
+  // Build remediation pills for breaches resolved in this rewrite
+  const regFindings = (currentFindings || []).filter(f => f.cat === 'regulatory' || f.capRule);
+  const remediationHtml = regFindings.length ? `
+    <div class="rewrite-remediations">
+      <span class="rewrite-remediations-label">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        Remediated Regulatory Breaches:
+      </span>
+      ${regFindings.map(f => `
+        <span class="remediation-pill">
+          <b>${esc(f.capRule || f.rule)}</b>: Replaced "${esc(f.text)}" with verified claims
+        </span>
+      `).join('')}
+    </div>
+  ` : '';
+
+  container.innerHTML = `
+    <div class="rewrite-nav" role="tablist">
+      ${tabsHtml}
+    </div>
+
+    <div class="rewrite-card">
+      <div class="rewrite-card-header">
+        <div class="rewrite-card-title">
+          <span>Option ${activeOpt.option}</span>
+          <span class="rewrite-card-badge">Governance Cleared</span>
+          ${currentIsUK ? `<span class="rewrite-card-dialect-badge">🇬🇧 UK English</span>` : ''}
+          ${hasBrand ? `<span class="rewrite-card-guidelines-badge">${activeBrand.isUploaded ? 'Uploaded Guidelines' : esc(activeBrand.name)}</span>` : ''}
+        </div>
+        <button type="button" class="copy-btn" id="copy_option_btn" data-copy="${encodeURIComponent(activeOpt.copy)}">
+          <span>📋</span> <span id="copy_btn_text">Copy text</span>
+        </button>
+      </div>
+
+      ${remediationHtml}
+
+      ${activeOpt.brandInterpretation ? `
+        <div class="rewrite-brand-interpretation">
+          <div class="rewrite-brand-interpretation-head">
+            <span class="interpretation-badge">Brand Voice Interpretation</span>
+            ${currentIsUK ? `<span class="interpretation-badge" style="background:rgba(77,201,156,0.15);color:var(--pass)">UK English</span>` : ''}
+            ${hasBrand ? `<span class="interpretation-brand-tag">• ${esc(activeBrand.name)}</span>` : ''}
+          </div>
+          <div class="interpretation-text">${esc(activeOpt.brandInterpretation)}</div>
+        </div>
+      ` : ''}
+
+      <div class="rewrite-card-body">${esc(activeOpt.copy)}</div>
+    </div>
+  `;
+
+  // Attach tab switch handlers
+  container.querySelectorAll(".rewrite-tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const optIdx = parseInt(btn.dataset.opt, 10);
+      currentActiveOptionTab = optIdx;
+      renderRewriteOptions(options, optIdx);
+    });
+  });
+
+  // Attach copy handler
+  const copyBtn = $("copy_option_btn");
+  if(copyBtn){
+    copyBtn.addEventListener("click", () => {
+      const copyText = decodeURIComponent(copyBtn.dataset.copy);
+      navigator.clipboard.writeText(copyText).then(() => {
+        const textSpan = $("copy_btn_text");
+        if(textSpan) {
+          textSpan.textContent = "Copied!";
+          setTimeout(() => { if(textSpan) textSpan.textContent = "Copy text"; }, 2000);
+        }
+      }).catch(() => {
+        // Fallback
+        const textarea = document.createElement("textarea");
+        textarea.value = copyText;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+        const textSpan = $("copy_btn_text");
+        if(textSpan) {
+          textSpan.textContent = "Copied!";
+          setTimeout(() => { if(textSpan) textSpan.textContent = "Copy text"; }, 2000);
+        }
+      });
+    });
+  }
+}
+
+function renderFallbackRewriteOptions(originalText){
+  const isSaarinen = activeBrand && ((activeBrand.name && /saarinen|modernist|arch/i.test(activeBrand.name)) || /organic|sculptural|architectural/i.test(activeBrand.principles || ''));
+  const isFintech = activeBrand && ((activeBrand.name && /fintech|compliance/i.test(activeBrand.name)) || /fca|prudent|measured/i.test(activeBrand.principles || ''));
+  const hasBrand = activeBrand && activeBrand.id !== 'none';
+
+  let opt1, opt2, opt3;
+  let interp1, interp2, interp3;
+
+  if (isSaarinen) {
+    interp1 = "Channels Mid-Century Modernist principles into rhythmic, conversational cadence, emphasizing structural clarity and honest functional design.";
+    opt1 = `Here is what we build: technology with clean lines, honest structure, and zero pretense. No hype. No unverified claims. Just dependable systems designed to do what they promise.\n\nProtected by continuous encryption protocols and audited standards. Simple, transparent terms for every team.\n\nSettlement completes in 2 business days. Form following function.`;
+
+    interp2 = "Translates modernist architectural restraint into an evocative narrative of raw materials, functional discipline, and lasting craft.";
+    opt2 = `A good structure doesn't demand attention with loud signs. It stands because the foundation is sound.\n\nWe don't manufacture miraculous shortcuts. What we craft is quiet, disciplined infrastructure: independently verified security, zero hidden fees, and payments that move without friction.\n\nClear agreements. 2-day settlements. Built for those who value enduring craft.`;
+
+    interp3 = "Applies modernist principles through direct-response clarity, converting functional elegance into scannable structural benefits.";
+    opt3 = `Architectural payment processing engineered for structural integrity.\n\n• Verified Defense: Continuous 256-bit encryption verified through independent third-party audits.\n• Clear Terms: Transparent account setup with no hidden maintenance fees.\n• Dependable Cadence: Predictable 2-day settlement cycles for all reconciled accounts.\n\nReview our architectural specifications to evaluate the system.`;
+  } else if (isFintech) {
+    interp1 = "Interprets fintech compliance rules through friendly, plainspoken plain English, replacing high-pressure urgency with open clarity.";
+    opt1 = `Let's be open from day one: payment processing should never come with fine print surprises. We build systems that keep your transactions moving smoothly and your compliance intact.\n\nEvery transfer uses 256-bit encryption and undergoes independent audits. Standard accounts carry no setup fee.\n\nSettlement clears in 2 business days. Clear terms, every step of the way.`;
+
+    interp2 = "Translates rigorous regulatory standards into an authentic, grounded narrative about institutional trust and transparency.";
+    opt2 = `Trust in finance isn't won with promises of effortless wealth. It's earned through audited systems and quiet consistency.\n\nWe provide disciplined payment processing: fortified with third-party verified security, structured without speculative claims, and engineered to settle cleanly in 2 business days.\n\nHonest technology. Resilient operations.`;
+
+    interp3 = "Channels fintech compliance guidelines into razor-sharp, risk-qualified commercial value propositions and structured disclosures.";
+    opt3 = `Institutional-grade payment processing with full regulatory transparency.\n\n• Audited Security: Industry-standard 256-bit encryption validated via third-party compliance reviews.\n• Transparent Pricing: Clear standard tier onboarding with no hidden administrative fees.\n• Verified Settlement: Predictable 2 business day settlement schedules for merchant accounts.\n\nAccess our compliance documentation and fee schedule today.`;
+  } else if (hasBrand) {
+    const brandLabel = activeBrand.name || 'your brand';
+    interp1 = `Interprets the ${brandLabel} guidelines into punchy, conversational plain English and warm, rhythmic cadence, stripping out corporate jargon.`;
+    opt1 = `Here is how we work: clear communication, tested systems, and zero empty buzzwords. We took your core principles and put them into plain English that speaks directly to your audience.\n\nEvery transaction is protected by 256-bit encryption and reviewed through ongoing compliance audits. Clear, straightforward pricing with no hidden surprises.\n\nSettlement in 2 business days. Direct and dependable.`;
+
+    interp2 = `Translates the ${brandLabel} guidelines into an atmospheric, grounded narrative with visceral sensory imagery and poetic pacing.`;
+    opt2 = `Good work speaks quietly. It doesn't rely on unprovable promises or shouting from the rooftops.\n\nWe build payment infrastructure grounded in honesty: fortified with audited security, engineered without false urgency, and designed to carry your business forward without drama.\n\nSettlement in 2 business days. Technology that honors the craft.`;
+
+    interp3 = `Applies the ${brandLabel} guidelines through direct-response commercial precision, structuring key value propositions into scannable proof points.`;
+    opt3 = `High-efficiency payment infrastructure aligned with verified compliance standards.\n\n• Certified Protection: Bank-grade encryption verified through rigorous third-party audits.\n• Transparent Structure: Clear account setup with no hidden maintenance fees or speculative claims.\n• Reliable Settlement: Consistent 2 business day settlement timelines across all reconciled accounts.\n\nConnect with our team to review technical integration specifications.`;
+  } else {
+    interp1 = "Conversational, rhythmic plain English with friendly cadence and active verbs, removing false urgency and absolute guarantees.";
+    opt1 = `Here is what we do: we build payments that work when you need them. No buzzwords. No unprovable guarantees. Just clear, tested technology that keeps your money moving and your operations sound.\n\nEvery transfer is protected by 256-bit encryption and audited regularly. Standard accounts are free to set up, with transparent pricing for enterprise features.\n\nSettlement completes in 2 business days. Ready when you are.`;
+
+    interp2 = "Visceral narrative perspective with lyrical pacing, gritty honesty, and evocative metaphors.";
+    opt2 = `Good business doesn't need hype. It needs pipes that don't leak.\n\nWe don't promise miraculous zero-risk windfalls. Nobody honest can. What we deliver is disciplined payment architecture: fortified with rigorous third-party audited security, built without hidden fees, and designed to move funds without drama.\n\nClear terms. Settlement in 2 business days. Work with people who respect the craft.`;
+
+    interp3 = "Razor-sharp direct-response clarity with scannable commercial structure, problem-to-solution momentum, and rigorous compliance.";
+    opt3 = `Modern payment processing built for reliable scale.\n\n• Verified Security: Bank-grade encryption verified through independent third-party audits.\n• Transparent Pricing: Free standard onboarding with no hidden maintenance fees.\n• Dependable Execution: Predictable 2-day settlement cycles for all reconciled accounts.\n\nSet up your merchant account today to review our compliance documentation and test the integration.`;
+  }
+
+  if (currentIsUK) {
+    opt1 = convertToUKEnglish(opt1);
+    opt2 = convertToUKEnglish(opt2);
+    opt3 = convertToUKEnglish(opt3);
+    interp1 = convertToUKEnglish(interp1);
+    interp2 = convertToUKEnglish(interp2);
+    interp3 = convertToUKEnglish(interp3);
+  }
+
+  const fallbackOptions = [
+    { option: 1, heading: "Option 1", brandInterpretation: interp1, copy: opt1 },
+    { option: 2, heading: "Option 2", brandInterpretation: interp2, copy: opt2 },
+    { option: 3, heading: "Option 3", brandInterpretation: interp3, copy: opt3 }
+  ];
+  cachedRewrites = fallbackOptions;
+  renderRewriteOptions(fallbackOptions, currentActiveOptionTab);
 }
 
 function render(){
   const text=$("input").value.trim();
-  if(!text){$("report").innerHTML='<p class="empty">Nothing to review yet.</p>';$("markup").innerHTML="";return}
-  const r=review(text), s=score(r);
-  // markup — sort spans, drop overlaps
-  const spans=[...r.v].filter(x=>x.len<200).sort((a,b)=>a.idx-b.idx||b.len-a.len);
-  let html="",cur=0;
+  updateDialectBadge(text);
+  if(!text){
+    $("report").innerHTML='<p class="empty">No review yet. Load a draft or sample to evaluate against active guidelines.</p>';
+    $("markup").innerHTML="";
+    cachedRewrites = null;
+    return;
+  }
+  const r=review(text);
+  const s=score(r);
+
+  // Markup: sort spans, drop nested overlaps
+  const spans=[...r.v].filter(x=>x.len<250).sort((a,b)=>a.idx-b.idx||b.len-a.len);
+  let h="", cur=0;
   for(const sp of spans){
     if(sp.idx<cur) continue;
-    html+=esc(text.slice(cur,sp.idx));
-    html+=`<mark class="${sp.sev}" title="${esc(sp.rule)}: ${esc(sp.msg)} ${esc(sp.fix)}">${esc(text.slice(sp.idx,sp.idx+sp.len))}</mark>`;
+    h+=esc(text.slice(cur,sp.idx));
+    h+=`<mark class="${sp.sev}" title="${esc(sp.rule)}: ${esc(sp.msg)} ${esc(sp.fix)}">${esc(text.slice(sp.idx,sp.idx+sp.len))}</mark>`;
     cur=sp.idx+sp.len;
   }
-  html+=esc(text.slice(cur));
-  $("markup").innerHTML=html;
+  h+=esc(text.slice(cur));
+  $("markup").innerHTML=h;
 
-  const pill=s.regBlock?["crit","Blocked — regulatory"]:s.total>=80?["pass","Cleared"]:s.total>=55?["warn","Needs revision"]:["crit","Blocked"];
-  const catRow=(l,n)=>`<div class="cat"><div class="n mono">${n}</div><div class="l">${l}</div><div class="bar"><i style="width:${n}%"></i></div></div>`;
-  const crits=r.v.filter(x=>x.sev==="crit").length;
+  const pill = s.regBlock ? ["crit","Blocked · regulatory breach"]
+             : s.total>=80 ? ["pass","Pass"]
+             : s.total>=55 ? ["warn","Needs revision"]
+             : ["crit","Fail"];
+
+  const lexiconCard = s.hasTone ? `
+    <div class="cat">
+      <div class="n">${Math.round(s.cats.lexicon)}</div>
+      <div class="l">Brand Tone</div>
+      <div class="bar"><i style="width:${s.cats.lexicon}%"></i></div>
+    </div>
+  ` : `
+    <div class="cat" style="opacity:0.6">
+      <div class="n">—</div>
+      <div class="l">No Tone Set</div>
+      <div class="bar"><i style="width:0%"></i></div>
+    </div>
+  `;
+
+  const hasGovernanceIssues = r.v.length > 0 || s.total < 80 || s.regBlock;
+
+  const rewriteSection = hasGovernanceIssues ? `
+    <section class="block">
+      <h2>Compliant Rewrites (${r.v.length} issue${r.v.length===1?"":"s"} resolved)</h2>
+      <div class="rewrite-options-container" id="rewrite_options_container">
+        <!-- Injected via fetchRewrites -->
+      </div>
+    </section>
+  ` : `
+    <section class="block">
+      <h2>Suggested Rewrite</h2>
+      <div class="sim">
+        <span class="simtag" style="background:var(--pass-soft);color:var(--pass);border-color:var(--pass)">Compliant Draft</span>
+        <div style="white-space:pre-wrap">${esc(rewrite(text))}</div>
+      </div>
+    </section>
+  `;
+
   $("report").innerHTML=`
     <div class="scorehead">
-      <div class="scorenum serif">${s.total}<small>/100</small></div>
-      <div class="verdict"><span class="pill ${pill[0]}">${pill[1]}</span>
-        <div style="margin-top:6px;color:var(--ink2)">${r.v.length} finding${r.v.length===1?"":"s"} · ${crits} critical · reading ease ${r.fl}</div></div>
+      <div class="scorenum">${s.total}<small>/100</small></div>
+      <div class="verdict">
+        <span class="pill ${pill[0]}">${pill[1]}</span>
+        <div style="font-size:12px;color:var(--ink3);margin-top:6px">${r.v.length} finding${r.v.length===1?"":"s"} · ease ${r.fl} · ${s.hasTone ? esc(activeBrand.name) : "Unbranded"}</div>
+      </div>
     </div>
+
     <div class="cats">
-      ${catRow("Regulatory",Math.round(s.cats.regulatory))}${catRow("Lexicon",Math.round(s.cats.lexicon))}
-      ${catRow("Claims",Math.round(s.cats.claims))}${catRow("Clarity",Math.round(s.cats.clarity))}
-      ${catRow("Mechanics",Math.round(s.cats.mechanics))}
+      <div class="cat"><div class="n">${Math.round(s.cats.regulatory)}</div><div class="l">Regulatory</div><div class="bar"><i style="width:${s.cats.regulatory}%"></i></div></div>
+      ${lexiconCard}
+      <div class="cat"><div class="n">${Math.round(s.cats.claims)}</div><div class="l">Claims & proof</div><div class="bar"><i style="width:${s.cats.claims}%"></i></div></div>
+      <div class="cat"><div class="n">${Math.round(s.cats.clarity)}</div><div class="l">Clarity</div><div class="bar"><i style="width:${s.cats.clarity}%"></i></div></div>
     </div>
-    <h2>Findings</h2>
-    ${r.v.length?`<ul class="vlist">${r.v.slice(0,40).map(x=>`
-      <li class="v ${x.sev}"><span class="rule">${esc(x.rule)}${x.src?` · ${esc(x.src)}`:""}</span><div>${esc(x.msg)}</div><div class="fix">→ <b>${esc(x.fix)}</b></div></li>`).join("")}</ul>`
-      :'<p class="empty">No rule violations.</p>'}
+
+    <ul class="vlist">
+      ${r.v.length ? r.v.map(x=>`
+        <li class="v ${x.sev}">
+          <div class="rule">
+            ${x.capRule ? `<span class="cap-badge ${x.sev}">${esc(x.capRule)}</span>` : ''}
+            <span>${esc(x.rule)}</span>
+          </div>
+          <div>${esc(x.msg)}</div>
+          ${x.capSection ? `<div class="cap-law-ref"><b>Regulation:</b> UK CAP Code §${esc(x.capSection)}${x.src ? ` (${esc(x.src)})` : ''}</div>` : ''}
+          <div class="fix"><b>Fix:</b> ${esc(x.fix)}</div>
+        </li>
+      `).join("") : `<li class="v" style="border-left-color:var(--pass);color:var(--ink2)">No findings detected. Copy satisfies active screening rules.</li>`}
+    </ul>
+
     <section class="block">
-      <h2>Tone review</h2>
-      <div class="sim"><span class="simtag">Simulated — model call in production</span>
-        ${tonePass(r,s).map(l=>`<p style="margin:6px 0">${esc(l)}</p>`).join("")}</div>
+      <h2>Tone review (${s.hasTone ? esc(activeBrand.name) : "Unbranded"})</h2>
+      <div class="sim">
+        <span class="simtag">${s.hasTone ? "Simulated against Brand Rules" : "Simulated Regulatory Screening"}</span>
+        ${tonePass(r,s).map(l=>`<p style="margin:4px 0">${esc(l)}</p>`).join("")}
+      </div>
     </section>
-    <section class="block">
-      <h2>Suggested rewrite</h2>
-      <div class="sim"><span class="simtag">Simulated — substitutions only</span>
-        <p style="white-space:pre-wrap;margin:6px 0">${esc(rewrite(text))}</p>
-        <p style="color:var(--ink3);font-size:12px;margin:8px 0 0">A real model pass would also restructure sentences and pull evidence forward. This shows the substitution layer only.</p></div>
-    </section>`;
+
+    ${rewriteSection}
+  `;
+
+  if(hasGovernanceIssues){
+    if(lastReviewedText !== text || !cachedRewrites){
+      lastReviewedText = text;
+      fetchRewrites(text, r.v);
+    } else {
+      renderRewriteOptions(cachedRewrites, currentActiveOptionTab);
+    }
+  } else {
+    lastReviewedText = text;
+  }
 }
 
 function drawChips(){
-  $("chips").innerHTML=banned.map((t,i)=>`<span class="chip">${esc(t)}<button aria-label="Remove ${esc(t)}" data-i="${i}">×</button></span>`).join("");
+  if(activeBrand.id === "none" || !activeBrand.banned.length){
+    $("chips").innerHTML='<span style="font-size:12px;color:var(--ink3)">No banned terms configured. Add terms below or ingest guidelines.</span>';
+    return;
+  }
+  $("chips").innerHTML=activeBrand.banned.map((t,i)=>`
+    <span class="chip">${esc(t)}<button aria-label="Remove term ${esc(t)}" data-i="${i}">×</button></span>
+  `).join("");
 }
-$("chips").addEventListener("click",e=>{
-  if(e.target.dataset.i!==undefined){banned.splice(+e.target.dataset.i,1);drawChips();render();}
+
+// Chips event listeners
+$("chips").addEventListener("click", e=>{
+  if(e.target.dataset.i!==undefined){
+    activeBrand.banned.splice(+e.target.dataset.i, 1);
+    updateBrandUI();
+    if($("input").value.trim()) render();
+  }
 });
-$("addterm").addEventListener("click",()=>{
+
+$("addterm").addEventListener("click", ()=>{
   const t=$("newterm").value.trim().toLowerCase();
-  if(t&&!banned.includes(t)){banned.push(t);$("newterm").value="";drawChips();render();}
+  if(t && !activeBrand.banned.includes(t)){
+    if(activeBrand.id === "none") {
+      activeBrand.id = "custom";
+      activeBrand.name = "Custom Guidelines";
+    }
+    activeBrand.banned.push(t);
+    $("newterm").value="";
+    updateBrandUI();
+    if($("input").value.trim()) render();
+  }
 });
-$("newterm").addEventListener("keydown",e=>{if(e.key==="Enter")$("addterm").click()});
-$("run").addEventListener("click",render);
-$("sample").addEventListener("click",()=>{$("input").value=SAMPLE;render()});
-$("clear").addEventListener("click",()=>{$("input").value="";render()});
-drawChips();
+
+$("newterm").addEventListener("keydown", e=>{
+  if(e.key==="Enter") $("addterm").click();
+});
+
+// Modal Management
+const modal = $("brand_modal");
+
+function openBrandModal(){
+  // Populate form with current activeBrand
+  $("brand_name_input").value = activeBrand.name === "No Guidelines (Raw Screening)" ? "" : activeBrand.name;
+  $("brand_principles_input").value = activeBrand.principles || "";
+  $("banned_terms_input").value = activeBrand.banned.join(", ");
+  
+  const subLines = [];
+  if(activeBrand.subs){
+    for(const [k,v] of Object.entries(activeBrand.subs)){
+      subLines.push(`${k}:${v}`);
+    }
+  }
+  $("preferred_terms_input").value = subLines.join("\n");
+
+  // Highlight matching preset button
+  document.querySelectorAll(".preset-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.preset === activeBrand.id);
+  });
+
+  modal.classList.add("active");
+}
+
+function closeBrandModal(){
+  modal.classList.remove("active");
+}
+
+$("open_brand_modal").addEventListener("click", openBrandModal);
+$("banner_switch_btn").addEventListener("click", openBrandModal);
+$("close_brand_modal").addEventListener("click", closeBrandModal);
+$("modal_cancel_btn").addEventListener("click", closeBrandModal);
+
+modal.addEventListener("click", e => {
+  if(e.target === modal) closeBrandModal();
+});
+
+// Uploaded document tracking
+let currentUploadedDocument = "";
+let currentUploadedFileName = "";
+
+// Ingest Guidelines Parser (for natural language text or JSON files)
+function parseIngestedGuidelines(content){
+  let parsedName = "Custom Ingested Brand";
+  let parsedPrinciples = "";
+  let parsedBanned = [];
+  let parsedSubs = {};
+
+  try {
+    const json = JSON.parse(content);
+    if(json.name) parsedName = json.name;
+    if(json.principles) parsedPrinciples = typeof json.principles === 'string' ? json.principles : JSON.stringify(json.principles, null, 2);
+    else if(json.guidelines) parsedPrinciples = typeof json.guidelines === 'string' ? json.guidelines : JSON.stringify(json.guidelines, null, 2);
+    else if(json.voice) parsedPrinciples = typeof json.voice === 'string' ? json.voice : JSON.stringify(json.voice, null, 2);
+    if(Array.isArray(json.banned)) parsedBanned = json.banned;
+    if(json.subs && typeof json.subs === "object") parsedSubs = json.subs;
+    return { name: parsedName, principles: parsedPrinciples, banned: parsedBanned, subs: parsedSubs, rawContent: content };
+  } catch(e) {
+    // Natural language / markdown text ingestion
+    const lines = content.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+    const bannedCandidates = new Set();
+    const subsCandidates = {};
+    let capturePrinciples = [];
+
+    for(const line of lines){
+      // Look for title/brand header
+      if(/^#+\s*(.+)/.test(line) && !parsedName.includes("Ingested")){
+        const match = line.match(/^#+\s*(.+)/);
+        if(match && match[1]) parsedName = match[1].replace(/guidelines|tone of voice|voice|brand/gi, "").trim() || "Ingested Brand";
+      }
+
+      // Look for banned terms list patterns: "Do not use:", "Avoid:", "Banned:", "Words to avoid"
+      if(/(?:banned|avoid|do not use|never use|don't use|disallowed|prohibited)[:\s]*(.*)/i.test(line)){
+        const match = line.match(/(?:banned|avoid|do not use|never use|don't use|disallowed|prohibited)[:\s]*(.*)/i);
+        if(match && match[1]){
+          match[1].split(/[,;•\t]+/).forEach(w => {
+            const clean = w.trim().replace(/^["'`]|["'`]$/g, "").toLowerCase();
+            if(clean && clean.length > 2) bannedCandidates.add(clean);
+          });
+        }
+      } else if(/^[•\-*]\s*(.+)/.test(line)){
+        // Bullet point in text
+        const bullet = line.replace(/^[•\-*]\s*/, "");
+        if(/(.+)\s*->\s*(.+)/.test(bullet) || /(.+)\s*:\s*(.+)/.test(bullet) || /use\s+(.+)\s+instead of\s+(.+)/i.test(bullet)){
+          const parts = bullet.split(/->|:/);
+          if(parts.length === 2){
+            const bad = parts[0].trim().toLowerCase();
+            const good = parts[1].trim();
+            if(bad && good){
+              bannedCandidates.add(bad);
+              subsCandidates[bad] = good;
+            }
+          }
+        } else {
+          if(capturePrinciples.length < 25 && bullet.length > 15) {
+            capturePrinciples.push(bullet);
+          }
+        }
+      } else {
+        if(capturePrinciples.length < 25 && line.length > 15 && !line.startsWith("#")){
+          capturePrinciples.push(line);
+        }
+      }
+    }
+
+    parsedPrinciples = capturePrinciples.join(" ");
+    parsedBanned = Array.from(bannedCandidates);
+    parsedSubs = subsCandidates;
+
+    return { name: parsedName, principles: parsedPrinciples, banned: parsedBanned, subs: parsedSubs, rawContent: content };
+  }
+}
+
+// File dropzone logic
+const dropzone = $("file_dropzone");
+const fileInput = $("file_input");
+
+dropzone.addEventListener("click", () => fileInput.click());
+
+dropzone.addEventListener("dragover", e => {
+  e.preventDefault();
+  dropzone.classList.add("dragover");
+});
+
+dropzone.addEventListener("dragleave", () => {
+  dropzone.classList.remove("dragover");
+});
+
+dropzone.addEventListener("drop", e => {
+  e.preventDefault();
+  dropzone.classList.remove("dragover");
+  if(e.dataTransfer.files && e.dataTransfer.files[0]){
+    handleFile(e.dataTransfer.files[0]);
+  }
+});
+
+fileInput.addEventListener("change", () => {
+  if(fileInput.files && fileInput.files[0]){
+    handleFile(fileInput.files[0]);
+  }
+});
+
+function handleFile(file){
+  const reader = new FileReader();
+  reader.onload = e => {
+    const text = e.target.result;
+    currentUploadedDocument = text;
+    currentUploadedFileName = file.name;
+    const parsed = parseIngestedGuidelines(text);
+    $("brand_name_input").value = parsed.name || file.name.replace(/\.[^/.]+$/, "");
+    $("brand_principles_input").value = parsed.principles || text.slice(0, 1500);
+    if(parsed.banned && parsed.banned.length){
+      $("banned_terms_input").value = parsed.banned.join(", ");
+    }
+    const subPairs = [];
+    for(const [k,v] of Object.entries(parsed.subs)){
+      subPairs.push(`${k}:${v}`);
+    }
+    if(subPairs.length){
+      $("preferred_terms_input").value = subPairs.join("\n");
+    }
+    document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
+    const customBtn = document.querySelector('.preset-btn[data-preset="custom"]');
+    if(customBtn) customBtn.classList.add("active");
+
+    const dropP = dropzone.querySelector("p");
+    if(dropP) {
+      dropP.innerHTML = `✓ Ingested <b style="color:var(--accent)">${esc(file.name)}</b>`;
+    }
+    const dropSm = dropzone.querySelector("small");
+    if(dropSm) {
+      dropSm.textContent = `Full guidelines document loaded (${Math.round(file.size/1024*10)/10} KB). Tone rules and vocabulary extracted.`;
+    }
+  };
+  reader.readAsText(file);
+}
+
+// Preset Buttons inside modal
+document.querySelectorAll(".preset-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const pId = btn.dataset.preset;
+    document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentUploadedDocument = "";
+    currentUploadedFileName = "";
+
+    const dropP = dropzone.querySelector("p");
+    if(dropP) dropP.textContent = "Drop your brand guidelines file here or click to browse";
+    const dropSm = dropzone.querySelector("small");
+    if(dropSm) dropSm.textContent = "Accepts .txt, .md, .json guidelines documents. Automatically extracts banned lexicon and voice principles.";
+
+    if(pId === "none"){
+      $("brand_name_input").value = "";
+      $("brand_principles_input").value = "";
+      $("banned_terms_input").value = "";
+      $("preferred_terms_input").value = "";
+      return;
+    }
+
+    if(BRAND_PRESETS[pId]){
+      const p = BRAND_PRESETS[pId];
+      $("brand_name_input").value = p.name;
+      $("brand_principles_input").value = p.principles;
+      $("banned_terms_input").value = p.banned.join(", ");
+      const subsArr = [];
+      for(const [k,v] of Object.entries(p.subs)){
+        subsArr.push(`${k}:${v}`);
+      }
+      $("preferred_terms_input").value = subsArr.join("\n");
+    }
+  });
+});
+
+// Apply Guidelines
+$("modal_apply_btn").addEventListener("click", () => {
+  const name = $("brand_name_input").value.trim();
+  const principles = $("brand_principles_input").value.trim();
+  const bannedRaw = $("banned_terms_input").value.trim();
+  const subsRaw = $("preferred_terms_input").value.trim();
+
+  const activePresetBtn = document.querySelector(".preset-btn.active");
+  const selectedPresetId = activePresetBtn ? activePresetBtn.dataset.preset : "custom";
+
+  cachedRewrites = null; // Invalidate cached rewrites so new brand interpretations are generated
+
+  if(selectedPresetId === "none" || (!name && !bannedRaw)){
+    // Remove all guidelines
+    activeBrand = {
+      id: "none",
+      name: "No Guidelines (Raw Screening)",
+      principles: "",
+      fullGuidelines: "",
+      isUploaded: false,
+      fileName: "",
+      banned: [],
+      subs: {}
+    };
+  } else {
+    // Parse banned terms
+    const bannedArr = bannedRaw ? bannedRaw.split(/[\n,]+/).map(s=>s.trim().toLowerCase()).filter(Boolean) : [];
+    const subsObj = {};
+    if(subsRaw){
+      subsRaw.split("\n").forEach(line => {
+        const parts = line.split(/[:=]/);
+        if(parts.length >= 2){
+          const k = parts[0].trim().toLowerCase();
+          const v = parts.slice(1).join(":").trim();
+          if(k && v) subsObj[k] = v;
+        }
+      });
+    }
+
+    activeBrand = {
+      id: selectedPresetId,
+      name: name || "Custom Brand",
+      principles: principles,
+      fullGuidelines: currentUploadedDocument || principles,
+      isUploaded: !!currentUploadedDocument,
+      fileName: currentUploadedFileName || "",
+      banned: bannedArr,
+      subs: subsObj
+    };
+  }
+
+  closeBrandModal();
+  updateBrandUI();
+  if($("input").value.trim()) render();
+});
+
+// Clear/Remove Guidelines
+function removeGuidelines(){
+  currentUploadedDocument = "";
+  currentUploadedFileName = "";
+  cachedRewrites = null;
+  activeBrand = {
+    id: "none",
+    name: "No Guidelines (Raw Screening)",
+    principles: "",
+    fullGuidelines: "",
+    isUploaded: false,
+    fileName: "",
+    banned: [],
+    subs: {}
+  };
+  closeBrandModal();
+  updateBrandUI();
+  if($("input").value.trim()) render();
+}
+
+$("banner_remove_btn").addEventListener("click", removeGuidelines);
+$("modal_clear_btn").addEventListener("click", removeGuidelines);
+
+// Main Action Buttons
+$("run").addEventListener("click", render);
+$("input").addEventListener("input", () => updateDialectBadge($("input").value));
+
+$("sample").addEventListener("click", () => {
+  if(activeBrand.id && BRAND_PRESETS[activeBrand.id] && BRAND_PRESETS[activeBrand.id].sampleText){
+    $("input").value = BRAND_PRESETS[activeBrand.id].sampleText;
+  } else {
+    $("input").value = BRAND_PRESETS.standard.sampleText;
+  }
+  render();
+});
+
+$("clear").addEventListener("click", () => {
+  $("input").value = "";
+  render();
+});
+
+// Theme toggle
+const themeToggle = $("theme_toggle");
+let isDark = false;
+
+themeToggle.addEventListener("click", () => {
+  isDark = !isDark;
+  document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
+  $("theme_label").textContent = isDark ? "Daylight Mode" : "Terminal Mode";
+  $("theme_icon").textContent = isDark ? "☼" : "◐";
+});
+
+// Initial boot
+updateBrandUI();
 </script>
 </body>
 </html>
