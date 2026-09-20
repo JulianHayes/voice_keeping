@@ -78,10 +78,11 @@ to be pleased with itself, and it does not congratulate the user.
 
 ## Design Principles
 
-1. **The output is a brief, not a verdict.** Every screen should read as
-   something you forward to a writer. Where the tool currently returns
-   "BLOCKED", that is a claim of authority the product does not have. Open
-   tension, see below.
+1. **An indicator, not a verdict.** Julian, 20 SEP 2026: "It's not a hard
+   verdict. It's part of an often iterative process in copy development. It's
+   an indicator of the challenges a piece of copy might face unless it is
+   reworked." Every label reads forward, towards the rework, and none of them
+   rules on the copy as it stands.
 2. **Name the evidence that would fix it.** A finding that only says "cut this"
    has failed. It has to say what figure, source or artefact would make the
    claim usable.
@@ -109,10 +110,13 @@ WCAG 2.2 AA, measured rather than estimated.
 
 Recorded, not resolved. These change the design if they move.
 
-1. **Verdict versus brief.** The app returns a score out of 100 and a
-   "BLOCKED - REGULATORY BREACH" pill. Julian's stated purpose is a springboard
-   and a briefing guide that does not replace legal sign-off. The current
-   framing overclaims. Unresolved.
+1. **Model prompt still instructs compliance.** Resolved in the interface,
+   open in the engine. `server.js` tells the model to "fix ALL governance and
+   regulatory breaches", to "directly resolve every regulatory breach", and to
+   return "3 compliant rewritten versions" (lines 300, 327, 406). Aiming a
+   rewrite at the flags is useful. Asserting the result is compliant is the
+   same overclaim the interface just dropped. Awaiting Julian's call, because
+   changing it changes model output, not just wording.
 2. **Commercial position.** Whether this is free and feeds the paid Brand Schema
    Audit, sold on its own, or internal only. Unanswered, and it decides whether
    the interface should expose the limit of what a screen can judge.

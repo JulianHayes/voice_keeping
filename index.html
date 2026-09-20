@@ -2247,12 +2247,11 @@ function renderRewriteOptions(options, activeIndex = 1){
   const remediationHtml = regFindings.length ? `
     <div class="rewrite-remediations">
       <span class="rewrite-remediations-label">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-        Remediated Regulatory Breaches:
+        Regulatory flags this draft addresses:
       </span>
       ${regFindings.map(f => `
         <span class="remediation-pill">
-          <b>${esc(f.capRule || f.rule)}</b>: Replaced "${esc(f.text)}" with verified claims
+          <b>${esc(f.capRule || f.rule)}</b>: "${esc(f.text)}" reworded. The claim still needs evidence.
         </span>
       `).join('')}
     </div>
@@ -2420,10 +2419,13 @@ function render(){
   h+=esc(text.slice(cur));
   $("markup").innerHTML=h;
 
-  const pill = s.regBlock ? ["crit","Blocked · regulatory breach"]
-             : s.total>=80 ? ["pass","Pass"]
-             : s.total>=55 ? ["warn","Needs revision"]
-             : ["crit","Fail"];
+  // An indicator of what this copy will run into unless it is reworked.
+  // Not a verdict, and never a sign-off: thresholds unchanged, wording is.
+  const pill = s.regBlock       ? ["crit","Regulatory challenge · rework indicated"]
+             : r.v.length === 0 ? ["pass","No challenges flagged"]
+             : s.total>=80      ? ["pass","Light rework indicated"]
+             : s.total>=55      ? ["warn","Moderate rework indicated"]
+             :                    ["crit","Substantial rework indicated"];
 
   const lexiconCard = s.hasTone ? `
     <div class="cat">
@@ -2452,7 +2454,7 @@ function render(){
     <section class="block">
       <h2>Suggested Rewrite</h2>
       <div class="sim">
-        <span class="simtag" style="background:var(--pass-soft);color:var(--pass);border-color:var(--pass)">Compliant Draft</span>
+        <span class="simtag">Starting point · not finished copy</span>
         <div style="white-space:pre-wrap">${esc(rewrite(text))}</div>
       </div>
     </section>
