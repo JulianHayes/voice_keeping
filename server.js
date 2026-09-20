@@ -12,7 +12,7 @@ const HOST = '0.0.0.0';
 
 app.use(express.json());
 
-// Lazy-initialize Gemini client
+// Lazy-initialise Gemini client
 let aiClient = null;
 function getAIClient() {
   if (!aiClient && process.env.GEMINI_API_KEY) {
@@ -192,7 +192,7 @@ function generateFallbackOptions(originalText, findings = [], brandName = '', br
     option2 = "A good structure doesn't demand attention with loud signs. It stands because the foundation is sound.\n\nWe don't manufacture miraculous shortcuts. What we craft is quiet, disciplined infrastructure: independently verified security, zero hidden fees, and payments that move without friction.\n\nClear agreements. 2-day settlements. Built for those who value enduring craft.";
 
     interp3 = "Applies modernist principles through direct-response clarity, converting functional elegance into scannable structural benefits.";
-    option3 = "Architectural payment processing engineered for structural integrity.\n\n• Verified Defense: Continuous 256-bit encryption verified through independent third-party audits.\n• Clear Terms: Transparent account setup with no hidden maintenance fees.\n• Dependable Cadence: Predictable 2-day settlement cycles for all reconciled accounts.\n\nReview our architectural specifications to evaluate the system.";
+    option3 = "Architectural payment processing engineered for structural integrity.\n\n• Verified Defence: Continuous 256-bit encryption verified through independent third-party audits.\n• Clear Terms: Transparent account setup with no hidden maintenance fees.\n• Dependable Cadence: Predictable 2-day settlement cycles for all reconciled accounts.\n\nReview our architectural specifications to evaluate the system.";
   } else if (isFintech) {
     interp1 = "Interprets fintech compliance rules through friendly, plainspoken plain English, replacing high-pressure urgency with open clarity.";
     option1 = "Let's be open from day one: payment processing should never come with fine print surprises. We build systems that keep your transactions moving smoothly and your compliance intact.\n\nEvery transfer uses 256-bit encryption and undergoes independent audits. Standard accounts carry no setup fee.\n\nSettlement clears in 2 business days. Clear terms, every step of the way.";
@@ -208,7 +208,7 @@ function generateFallbackOptions(originalText, findings = [], brandName = '', br
     option1 = `Here is how we work: clear communication, tested systems, and zero empty buzzwords. We took your core principles and put them into plain English that speaks directly to your audience.\n\nEvery transaction is protected by 256-bit encryption and reviewed through ongoing compliance audits. Clear, straightforward pricing with no hidden surprises.\n\nSettlement in 2 business days. Direct and dependable.`;
 
     interp2 = `Translates the ${brandLabel} guidelines into an atmospheric, grounded narrative with visceral sensory imagery and poetic pacing.`;
-    option2 = `Good work speaks quietly. It doesn't rely on unprovable promises or shouting from the rooftops.\n\nWe build payment infrastructure grounded in honesty: fortified with audited security, engineered without false urgency, and designed to carry your business forward without drama.\n\nSettlement in 2 business days. Technology that honors the craft.`;
+    option2 = `Good work speaks quietly. It doesn't rely on unprovable promises or shouting from the rooftops.\n\nWe build payment infrastructure grounded in honesty: fortified with audited security, engineered without false urgency, and designed to carry your business forward without drama.\n\nSettlement in 2 business days. Technology that honours the craft.`;
 
     interp3 = `Applies the ${brandLabel} guidelines through direct-response commercial precision, structuring key value propositions into scannable proof points.`;
     option3 = `High-efficiency payment infrastructure aligned with verified compliance standards.\n\n• Certified Protection: Bank-grade encryption verified through rigorous third-party audits.\n• Transparent Structure: Clear account setup with no hidden maintenance fees or speculative claims.\n• Reliable Settlement: Consistent 2 business day settlement timelines across all reconciled accounts.\n\nConnect with our team to review technical integration specifications.`;
@@ -274,7 +274,12 @@ app.post('/api/rewrite', async (req, res) => {
 
   const guidelinesContent = (brandGuidelines || brandPrinciples || '').trim();
   const hasGuidelines = guidelinesContent.length > 0 && brandName !== 'No Guidelines (Raw Screening)';
-  const isUK = detectUKEnglish(text, brandName, brandPrinciples, brandGuidelines, clientIsUK);
+  // Every rule this tool screens against is UK: CAP Code, CMA Green Claims,
+  // DMCC Act 2024, FCA. So the copy it hands back is always UK English,
+  // whatever the draft came in as. Detection now only reports what the draft
+  // itself used, for the badge on the input; it no longer gates the output.
+  const draftIsUK = detectUKEnglish(text);
+  const isUK = true;
 
   const ai = getAIClient();
 
@@ -284,6 +289,7 @@ app.post('/api/rewrite', async (req, res) => {
       success: true,
       options: generateFallbackOptions(text, findings, brandName, brandPrinciples, brandGuidelines, banned, subs, isUK),
       isUK,
+      draftIsUK,
       source: 'fallback'
     });
   }
@@ -327,7 +333,7 @@ CRITICAL MANDATE — EACH REWRITE MUST EXPLICITLY REMEDIATE IDENTIFIED BREACHES:
 Each proposed rewrite alternative MUST directly resolve every regulatory breach flagged in the review while preserving commercial vitality and punch.
 
 CRITICAL DIALECT & SPELLING LOCALISATION MANDATE:
-${isUK ? `THE INPUT TEXT IS IN UK ENGLISH (British English).
+${isUK ? `THIS TOOL ALWAYS RETURNS UK ENGLISH, whatever dialect the draft arrived in. If the input uses US spellings, convert them.
 All THREE rewritten options and all brand interpretations MUST be written strictly in UK ENGLISH (British English spelling, grammar, punctuation, and idioms).
 - MANDATORY UK SPELLINGS (NEVER use US spellings):
   * -ise / -isation: e.g. optimise, customise, organise, prioritise, categorise, recognise, authorise, specialise, analyse, standardise, capitalise. (NEVER optimize, customize, organize, prioritize, analyze, recognize, specialize).
@@ -336,7 +342,7 @@ All THREE rewritten options and all brand interpretations MUST be written strict
   * -ence: e.g. defence, offence, licence (noun). (NEVER defense, offense, license as a noun).
   * double-l: e.g. cancelled, cancelling, travelling, travelled, traveller, modelled, levelling, enrolment, fulfil. (NEVER canceled, traveling).
   * vocabulary & style: e.g. programme (not program for non-software), per cent (not percent), whilst, amongst.
-- Match the UK English tone and vocabulary faithfully.` : `Preserve the spelling dialect of the input text. If the input text is in UK English, use UK English across all options; if US English is used, adhere to US conventions.`}
+- Match the UK English tone and vocabulary faithfully.` : ``}
 
 STYLISTIC FOUNDATIONS FOR THE 3 OPTIONS:
 - Option 1 must be written in the distinct stylistic voice of Vikki Ross: conversational, rhythmic, punchy, human, warm, using everyday British-influenced plain English, active verbs, subtle repetition, and musical cadence.
@@ -389,7 +395,7 @@ ${text}
 GOVERNANCE FINDINGS TO FIX:
 ${findingsSummary}
 
-${isUK ? `IMPORTANT: The input copy is in UK English. All outputted text and brand interpretations MUST be strictly in UK English.\n` : ''}
+${isUK ? `IMPORTANT: All output text and brand interpretations MUST be strictly in UK English, whatever dialect the draft used.\n` : ''}
 ${hasGuidelines ? `
 ======================================================
 CLIENT BRAND VOICE GUIDELINES (${isUploadedGuidelines ? 'UPLOADED DOCUMENT' : 'ACTIVE BRAND RULES'}):
@@ -482,7 +488,7 @@ Generate the 3 compliant rewritten versions in JSON format now, ensuring all 3 o
           copy
         };
       });
-      return res.json({ success: true, options: scrubbed, isUK, source: 'gemini' });
+      return res.json({ success: true, options: scrubbed, isUK, draftIsUK, source: 'gemini' });
     } else {
       return res.json({
         success: true,
@@ -497,6 +503,7 @@ Generate the 3 compliant rewritten versions in JSON format now, ensuring all 3 o
       success: true,
       options: generateFallbackOptions(text, findings, brandName, brandPrinciples, brandGuidelines, banned, subs, isUK),
       isUK,
+      draftIsUK,
       source: 'fallback_error',
       error: err.message
     });

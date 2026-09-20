@@ -1552,7 +1552,7 @@ details.rules summary:hover {
     <div class="modal-head">
       <div>
         <h3 id="modal_title">Brand Tone of Voice Guidelines</h3>
-        <p>Preload your organization's voice rules, paste natural guidelines or JSON, or run purely unbranded.</p>
+        <p>Preload your organisation's voice rules, paste natural guidelines or JSON, or run purely unbranded.</p>
       </div>
       <button class="modal-close" id="close_brand_modal" aria-label="Close modal"><i class="ph ph-x" aria-hidden="true"></i></button>
     </div>
@@ -1570,7 +1570,7 @@ details.rules summary:hover {
       </div>
 
       <div class="form-group">
-        <label for="brand_name_input">Brand / Organization Name</label>
+        <label for="brand_name_input">Brand / Organisation Name</label>
         <input type="text" id="brand_name_input" class="form-input" placeholder="e.g., Acme Studio or leave blank for Unbranded">
       </div>
 
@@ -1619,7 +1619,7 @@ const BRAND_PRESETS = {
   standard: {
     id: "standard",
     name: "Standard Clean",
-    principles: "Direct, plainspoken, and grounded. Reject empty category marketing buzzwords; favor concrete descriptions of value and factual claims.",
+    principles: "Direct, plainspoken, and grounded. Reject empty category marketing buzzwords; favour concrete descriptions of value and factual claims.",
     banned: ["passionate", "world-class", "leverage", "cutting-edge", "seamless", "empower", "empowers", "unlock", "incredible", "robust"],
     subs: {
       "leverage": "use",
@@ -1958,7 +1958,7 @@ function review(text){
   while((m=caps.exec(text))){
     v.push({sev:"warn", cat:"mechanics", rule:"MEC-02 · all-caps shouting",
       text:m[0], idx:m.index, len:m[0].length,
-      msg:`"${m[0]}" is capitalized.`,
+      msg:`"${m[0]}" is capitalised.`,
       fix:"Use sentence case unless it's a recognised acronym."});
   }
 
@@ -2215,14 +2215,18 @@ function detectUKEnglish(text = '', brandName = '', brandPrinciples = '', brandG
   return ukPatterns.some(rx => rx.test(sample));
 }
 
-let currentIsUK = false;
+// The rules are UK, so the copy this tool returns is UK English every time.
+// draftIsUK only describes what was pasted in.
+let currentIsUK = true;
+let draftIsUK = false;
 
 function updateDialectBadge(text){
-  const isUK = detectUKEnglish(text, activeBrand ? activeBrand.name : '', activeBrand ? activeBrand.principles : '', activeBrand ? activeBrand.fullGuidelines : '');
-  currentIsUK = isUK;
+  // Detect on the draft alone. The badge says "detected in draft", so folding
+  // the brand guidelines into the sample would make it report on the wrong text.
+  draftIsUK = detectUKEnglish(text);
   const tag = $("dialect_tag");
   if(tag){
-    tag.style.display = isUK ? "inline-flex" : "none";
+    tag.style.display = draftIsUK ? "inline-flex" : "none";
   }
   const counter = $("char_counter");
   if(counter){
@@ -2243,8 +2247,8 @@ async function fetchRewrites(text, findings){
   if(!container) return;
 
   currentFindings = Array.isArray(findings) ? findings : [];
-  const isUK = detectUKEnglish(text, activeBrand ? activeBrand.name : '', activeBrand ? activeBrand.principles : '', activeBrand ? activeBrand.fullGuidelines : '');
-  currentIsUK = isUK;
+  const isUK = true;
+  currentIsUK = true;
   updateDialectBadge(text);
 
   const hasBrand = activeBrand && activeBrand.id !== 'none';
@@ -2252,7 +2256,7 @@ async function fetchRewrites(text, findings){
   container.innerHTML = `
     <div class="rewrite-loading">
       <div class="spinner"></div>
-      <span>Drafting 3 rewrite options${brandLabel}${isUK ? ' (preserving UK English)' : ''}</span>
+      <span>Drafting 3 rewrite options${brandLabel} in UK English</span>
     </div>
   `;
 
@@ -2275,14 +2279,12 @@ async function fetchRewrites(text, findings){
 
     const data = await res.json();
     if(data && data.success && Array.isArray(data.options) && data.options.length >= 3){
-      if(data.isUK !== undefined) currentIsUK = data.isUK;
+      if(data.draftIsUK !== undefined) draftIsUK = data.draftIsUK;
       cachedRewrites = data.options;
-      if(currentIsUK){
-        cachedRewrites.forEach(o => {
-          o.copy = convertToUKEnglish(o.copy);
-          o.brandInterpretation = convertToUKEnglish(o.brandInterpretation);
-        });
-      }
+      cachedRewrites.forEach(o => {
+        o.copy = convertToUKEnglish(o.copy);
+        o.brandInterpretation = convertToUKEnglish(o.brandInterpretation);
+      });
       renderRewriteOptions(cachedRewrites, currentActiveOptionTab);
     } else {
       renderFallbackRewriteOptions(text);
@@ -2413,7 +2415,7 @@ function renderFallbackRewriteOptions(originalText){
     opt2 = `A good structure doesn't demand attention with loud signs. It stands because the foundation is sound.\n\nWe don't manufacture miraculous shortcuts. What we craft is quiet, disciplined infrastructure: independently verified security, zero hidden fees, and payments that move without friction.\n\nClear agreements. 2-day settlements. Built for those who value enduring craft.`;
 
     interp3 = "Applies modernist principles through direct-response clarity, converting functional elegance into scannable structural benefits.";
-    opt3 = `Architectural payment processing engineered for structural integrity.\n\n• Verified Defense: Continuous 256-bit encryption verified through independent third-party audits.\n• Clear Terms: Transparent account setup with no hidden maintenance fees.\n• Dependable Cadence: Predictable 2-day settlement cycles for all reconciled accounts.\n\nReview our architectural specifications to evaluate the system.`;
+    opt3 = `Architectural payment processing engineered for structural integrity.\n\n• Verified Defence: Continuous 256-bit encryption verified through independent third-party audits.\n• Clear Terms: Transparent account setup with no hidden maintenance fees.\n• Dependable Cadence: Predictable 2-day settlement cycles for all reconciled accounts.\n\nReview our architectural specifications to evaluate the system.`;
   } else if (isFintech) {
     interp1 = "Interprets fintech compliance rules through friendly, plainspoken plain English, replacing high-pressure urgency with open clarity.";
     opt1 = `Let's be open from day one: payment processing should never come with fine print surprises. We build systems that keep your transactions moving smoothly and your compliance intact.\n\nEvery transfer uses 256-bit encryption and undergoes independent audits. Standard accounts carry no setup fee.\n\nSettlement clears in 2 business days. Clear terms, every step of the way.`;
@@ -2429,7 +2431,7 @@ function renderFallbackRewriteOptions(originalText){
     opt1 = `Here is how we work: clear communication, tested systems, and zero empty buzzwords. We took your core principles and put them into plain English that speaks directly to your audience.\n\nEvery transaction is protected by 256-bit encryption and reviewed through ongoing compliance audits. Clear, straightforward pricing with no hidden surprises.\n\nSettlement in 2 business days. Direct and dependable.`;
 
     interp2 = `Translates the ${brandLabel} guidelines into an atmospheric, grounded narrative with visceral sensory imagery and poetic pacing.`;
-    opt2 = `Good work speaks quietly. It doesn't rely on unprovable promises or shouting from the rooftops.\n\nWe build payment infrastructure grounded in honesty: fortified with audited security, engineered without false urgency, and designed to carry your business forward without drama.\n\nSettlement in 2 business days. Technology that honors the craft.`;
+    opt2 = `Good work speaks quietly. It doesn't rely on unprovable promises or shouting from the rooftops.\n\nWe build payment infrastructure grounded in honesty: fortified with audited security, engineered without false urgency, and designed to carry your business forward without drama.\n\nSettlement in 2 business days. Technology that honours the craft.`;
 
     interp3 = `Applies the ${brandLabel} guidelines through direct-response commercial precision, structuring key value propositions into scannable proof points.`;
     opt3 = `High-efficiency payment infrastructure aligned with verified compliance standards.\n\n• Certified Protection: Bank-grade encryption verified through rigorous third-party audits.\n• Transparent Structure: Clear account setup with no hidden maintenance fees or speculative claims.\n• Reliable Settlement: Consistent 2 business day settlement timelines across all reconciled accounts.\n\nConnect with our team to review technical integration specifications.`;
@@ -2444,14 +2446,12 @@ function renderFallbackRewriteOptions(originalText){
     opt3 = `Modern payment processing built for reliable scale.\n\n• Verified Security: Bank-grade encryption verified through independent third-party audits.\n• Transparent Pricing: Free standard onboarding with no hidden maintenance fees.\n• Dependable Execution: Predictable 2-day settlement cycles for all reconciled accounts.\n\nSet up your merchant account today to review our compliance documentation and test the integration.`;
   }
 
-  if (currentIsUK) {
-    opt1 = convertToUKEnglish(opt1);
-    opt2 = convertToUKEnglish(opt2);
-    opt3 = convertToUKEnglish(opt3);
-    interp1 = convertToUKEnglish(interp1);
-    interp2 = convertToUKEnglish(interp2);
-    interp3 = convertToUKEnglish(interp3);
-  }
+  opt1 = convertToUKEnglish(opt1);
+  opt2 = convertToUKEnglish(opt2);
+  opt3 = convertToUKEnglish(opt3);
+  interp1 = convertToUKEnglish(interp1);
+  interp2 = convertToUKEnglish(interp2);
+  interp3 = convertToUKEnglish(interp3);
 
   const fallbackOptions = [
     { option: 1, heading: "Option 1", brandInterpretation: interp1, copy: opt1 },
