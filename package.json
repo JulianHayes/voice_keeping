@@ -1,16 +1,23 @@
 {
-  "name": "voice-governor",
+  "name": "voicekeeping",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node server.js",
-    "build": "echo 'Build complete'",
-    "start": "node server.js",
-    "lint": "node --check server.js"
+    "dev": "node --env-file-if-exists=.env server.js",
+    "build": "node --check server.js && node --check domain.js && node --check app.js",
+    "start": "node --env-file-if-exists=.env server.js",
+    "lint": "npm run build",
+    "test": "node --test tests/domain.test.js tests/server.test.js",
+    "test:browser": "playwright test"
   },
+  "engines": { "node": ">=22" },
   "dependencies": {
     "@google/genai": "^2.23.0",
     "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.63.0"
   }
 }
