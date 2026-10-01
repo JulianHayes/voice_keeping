@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Voice Companion · Material study</title>
+<style>
+:root{--yellow:#F6DC19;--stone:#A6A29F;--signal:#FB2A00;--mint:#6AA992;--olive:#708166;--cream:#E4E2D1;--moss:#677163;--ink:#0D0D0D;--slate:#273240;--coral:#F25A38;--silver:#CCD0C8;--font:"Bahnschrift","Franklin Gothic Medium",sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--olive);color:var(--ink);font:16px/1.45 var(--font)}
+button{font:inherit;color:inherit;cursor:pointer;border-radius:0}
+a{color:inherit}
+h1,h2,h3,p{margin:0}
+button:focus-visible,a:focus-visible,summary:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--ink);outline-offset:5px}
+button:active{transform:translateY(1px)}
+[hidden]{display:none!important}
+::selection{background:var(--yellow);color:var(--ink)}
+.study-bar{background:var(--mint);color:var(--ink);border-bottom:1px solid var(--ink);padding:10px 28px;display:flex;justify-content:space-between;gap:20px;align-items:center}
+.study-label{font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.study-nav{display:flex;gap:6px;flex-wrap:wrap}
+.study-nav button{padding:9px 14px;min-height:42px;background:none;border:1px solid transparent;font-size:13px}
+.study-nav button[aria-pressed="true"]{border-color:var(--ink)}
+.study-nav button:hover{background:rgba(13,13,13,.08)}
+.study-nav button:focus-visible{outline-color:var(--ink)}
+.shell{max-width:1440px;margin:auto;padding:0 36px 25px}
+.masthead{display:grid;grid-template-columns:minmax(0,1fr) minmax(230px,.48fr);align-items:end;gap:28px;padding:27px 0 24px}
+h1{font-size:clamp(48px,5.5vw,80px);font-weight:750;line-height:.84;letter-spacing:-4px}
+.mast-info{border-top:1px solid var(--ink);padding-top:11px;display:flex;justify-content:space-between;gap:12px;align-items:end}
+.mast-info strong{font-size:24px;font-weight:650;line-height:1.1}
+.meta{font-size:12px;line-height:1.5}
+.meta-small{font-size:11px;letter-spacing:.05em;text-transform:uppercase}
+.demo-label{background:var(--cream);padding:3px 6px;display:inline-block;font-size:10px;line-height:1.3;margin-top:8px;color:var(--ink)}
+.work-grid{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(300px,1fr);border:1px solid var(--ink);align-items:stretch}
+.writing{background:var(--silver);padding:26px 30px 24px;display:flex;flex-direction:column;min-width:0}
+.writing-top{display:flex;justify-content:space-between;align-items:baseline;gap:20px;padding-bottom:20px;border-bottom:1px solid var(--ink)}
+.writing h2{font-size:44px;font-weight:700;line-height:1;letter-spacing:-1.8px}
+.writing-top p{font-size:12px}
+.draft{padding:25px 0 22px;font-size:21px;line-height:1.5;max-width:65ch;flex:1;min-height:300px}
+.draft p+p{margin-top:21px}
+.draft mark{background:var(--yellow);color:var(--ink);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px}
+.writing-bottom{display:grid;grid-template-columns:minmax(0,1fr) 126px;gap:24px;align-items:end;border-top:1px solid var(--ink);padding-top:20px}
+.writing-note{max-width:245px;font-size:15px;line-height:1.4}
+.word-count{display:flex;align-items:baseline;gap:6px;margin-top:20px;font-size:12px;color:var(--slate)}
+.word-count strong{font-size:29px;line-height:1;color:var(--ink);font-weight:500;letter-spacing:-1px}
+.review-button{background:var(--ink);color:var(--silver);border:0;width:126px;height:126px;border-radius:50%;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:7px;font-size:21px;font-weight:650;line-height:1.05;letter-spacing:-.5px}
+.review-button:hover{background:var(--slate)}
+.review-button .arrow{font-size:27px;font-weight:400}
+.reference{border-left:1px solid var(--ink);display:flex;flex-direction:column;min-width:0}
+.pack-section{color:var(--ink);border-bottom:1px solid var(--ink);background:var(--mint)}
+.pack-section:last-child{border-bottom:0}
+.pack-section[data-section="words"]{background:var(--yellow)}
+.pack-section[data-section="examples"]{background:var(--coral)}
+.pack-section.is-open{flex:1}
+.pack-toggle{width:100%;border:0;background:transparent;min-height:124px;padding:23px 24px;display:grid;grid-template-columns:1fr 28px;align-items:end;gap:14px;text-align:left}
+.pack-toggle:hover{background:rgba(13,13,13,.05)}
+.pack-title{font-size:47px;line-height:.89;font-weight:750;letter-spacing:-2px}
+.pack-sign{font-size:30px;line-height:1;font-weight:400;text-align:right;padding-bottom:3px}
+.pack-toggle:focus-visible{outline-offset:-7px}
+.pack-body{padding:3px 24px 25px}
+.pack-body .source{font-size:11px;text-transform:uppercase;letter-spacing:.04em;border-top:1px solid var(--ink);padding-top:13px}
+.voice-statement{font-size:27px;line-height:1.05;letter-spacing:-.8px;font-weight:700;margin:16px 0}
+.voice-statement br{display:none}
+.rule-list{margin:0;padding:0;list-style:none}
+.rule-list li{padding:10px 0;border-top:1px solid rgba(13,13,13,.35);font-size:15px;line-height:1.3}
+.rule-list li:last-child{padding-bottom:0}
+.word-example{font-size:30px;line-height:1.1;letter-spacing:-1px;margin:20px 0;text-decoration:line-through;text-decoration-thickness:2px;overflow-wrap:anywhere}
+.pack-body p.explanation{font-size:16px;line-height:1.4;max-width:29ch}
+.example-quote{font-size:33px;line-height:1.07;letter-spacing:-1.2px;margin:20px 0 24px}
+.pack-bottom{font-size:11px;line-height:1.4;margin-top:22px;padding-top:12px;border-top:1px solid rgba(13,13,13,.35)}
+.review-results{margin-top:24px;border:1px solid var(--ink);background:var(--silver)}
+.results-top{display:flex;justify-content:space-between;gap:15px;align-items:center;padding:20px 26px;border-bottom:1px solid var(--ink)}
+.results-top h2{font-size:34px;line-height:1;font-weight:700;letter-spacing:-1.3px}
+.text-button{background:none;border:0;border-bottom:1px solid var(--ink);padding:9px 0;min-height:44px;font-size:13px}
+.review-columns{display:grid;grid-template-columns:1fr 1.4fr}
+.finding{padding:25px 26px;background:var(--yellow);border-right:1px solid var(--ink)}
+.source-tag{font-size:12px;font-weight:650;display:flex;gap:12px;align-items:baseline;margin-bottom:20px}
+.source-tag span{font-size:30px;font-weight:500;letter-spacing:-1px}
+.finding h3{font-size:29px;line-height:1.1;letter-spacing:-1px;margin-bottom:14px}
+.finding p{font-size:16px;max-width:40ch}
+.finding .check-kind{font-size:11px;margin-bottom:8px;text-transform:uppercase;letter-spacing:.03em}
+.edited{padding:25px 28px}
+.edited-top{display:flex;gap:12px;align-items:center;justify-content:space-between;border-bottom:1px solid var(--ink);padding-bottom:16px;margin-bottom:20px}
+.edited h3{font-size:24px;line-height:1.1;letter-spacing:-.6px}
+.square-button{min-height:44px;background:transparent;border:2px solid var(--ink);padding:8px 15px;font-size:14px;font-weight:600}
+.square-button:hover{background:var(--stone)}
+.edited-copy{font-size:18px;line-height:1.5}
+.edited-copy p+p{margin-top:18px}
+.review-note{font-size:12px;margin-top:22px;color:var(--slate)}
+#copy-status{font-weight:650}
+.study-foot{padding:15px 0;display:flex;justify-content:space-between;gap:18px;font-size:11px;line-height:1.4}
+.study-foot .swatches{display:flex;align-items:center;gap:4px}
+.study-foot i{width:17px;height:17px;display:block;background:var(--mint);border:1px solid var(--ink)}
+.study-foot i:nth-child(2){background:var(--yellow)}.study-foot i:nth-child(3){background:var(--coral)}
+.view-heading{display:flex;align-items:end;justify-content:space-between;gap:25px;border-top:1px solid var(--ink);padding:22px 0 25px}
+.view-heading h2{font-size:40px;line-height:1;letter-spacing:-1.5px}
+.view-heading p{max-width:450px;font-size:15px}
+.dividers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.divider{border:1px solid var(--ink);padding:23px;background:var(--mint);min-height:460px;display:flex;flex-direction:column}
+.divider:nth-child(2){background:var(--yellow)}.divider:nth-child(3){background:var(--coral)}
+.divider .series{font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+.divider .chapter{font-size:120px;line-height:1;font-weight:450;letter-spacing:-7px;margin-top:25px}
+.divider h3{font-size:52px;line-height:.95;letter-spacing:-2.5px;margin-top:auto;font-weight:700}
+.divider p{font-size:14px;border-top:1px solid var(--ink);padding-top:13px;margin-top:22px}
+.pack-link{display:flex;gap:16px;align-items:start;border-top:1px solid var(--ink);margin-top:24px;padding-top:20px;max-width:850px;font-size:17px}
+.pack-link strong{flex:0 0 160px;font-size:22px;line-height:1.1;letter-spacing:-.5px}
+.colour-roles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--ink);border:1px solid var(--ink)}
+.role{background:var(--silver);padding:22px}
+.role h3{font-size:24px;letter-spacing:-.7px;line-height:1.1;margin-bottom:15px}
+.role p{font-size:14px;line-height:1.45}
+.role-swatches{display:flex;height:85px;margin-bottom:15px;border:1px solid var(--ink)}
+.role-swatches i{flex:1}
+.hexes{font-size:12px;line-height:1.6;margin-bottom:12px;word-spacing:8px}
+.palette-inventory{margin-top:24px;border-top:1px solid var(--ink)}
+.palette-inventory summary{padding:16px 0;font-size:19px;cursor:pointer;font-weight:600}
+.inventory-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;padding-bottom:22px}
+.colour-sample{min-width:0}
+.colour-sample i{display:block;height:58px;border:1px solid var(--ink);margin-bottom:8px}
+.colour-sample p{font-size:12px;line-height:1.35}
+.colour-sample strong{display:block;font-size:14px}
+.cream-note{margin-top:20px;padding-top:18px;border-top:1px solid var(--ink);font-size:14px;max-width:800px}
+@media(min-width:1500px){.shell{padding:0 45px 30px}.masthead{padding-top:36px;padding-bottom:30px}.draft{min-height:330px}}
+@media(max-width:950px){.work-grid{grid-template-columns:minmax(0,1.5fr) minmax(260px,1fr)}.shell{padding:0 24px 24px}.writing{padding:23px}.voice-statement{font-size:39px}.pack-toggle{padding:17px 19px;grid-template-columns:40px 1fr 16px;gap:10px}.pack-title{font-size:20px}.pack-number{font-size:31px}.pack-body{padding-left:20px;padding-right:20px}.draft{font-size:19px}.study-bar{padding:8px 24px}.study-label{max-width:115px}.divider{min-height:390px;padding:18px}.divider .chapter{font-size:96px}.divider h3{font-size:40px}.role{padding:18px}}
+@media(max-width:760px){.study-bar{align-items:start;gap:8px;flex-wrap:wrap}.study-label{max-width:none;padding-top:4px}.study-nav{gap:4px}.study-nav button{font-size:12px;padding:8px 10px}.masthead{grid-template-columns:1fr auto;gap:16px;padding:24px 0}.mast-info{display:block;max-width:190px}.mast-info .meta{margin-top:10px}h1{font-size:54px;letter-spacing:-3px}.work-grid{display:flex;flex-direction:column}.reference{border-left:0;border-bottom:1px solid var(--ink);order:0;display:block}.writing{order:1}.pack-toggle{min-height:60px;padding:13px 20px;grid-template-columns:38px 1fr 20px}.pack-title{font-size:21px}.pack-number{font-size:29px}.pack-body{padding:0 20px 20px}.voice-statement{font-size:29px;line-height:1.05;letter-spacing:-.9px;margin:15px 0}.voice-statement br{display:none}.voice-statement br::after{content:" "}.rule-list{display:flex;gap:20px}.rule-list li{flex:1;font-size:13px;padding:9px 0}.pack-bottom{margin-top:15px}.pack-body .source{font-size:10px}.draft{min-height:260px}.review-columns{grid-template-columns:1fr}.finding{border-right:0;border-bottom:1px solid var(--ink)}.view-heading{display:block}.view-heading p{margin-top:16px}.dividers{gap:9px}.divider{min-height:320px;padding:14px}.divider .chapter{font-size:74px;letter-spacing:-4px}.divider h3{font-size:31px;letter-spacing:-1px}.divider .series{font-size:9px}.divider p{font-size:12px}.colour-roles{grid-template-columns:1fr}.role{display:grid;grid-template-columns:145px 1fr;gap:0 22px}.role-swatches{grid-row:1/5;height:100%;min-height:100px}.role h3{font-size:24px}.inventory-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.pack-link{display:block}.pack-link strong{display:block;margin-bottom:12px}}
+@media(max-width:460px){.shell{padding:0 16px 16px}.study-bar{padding:9px 16px}.study-nav{width:100%;display:grid;grid-template-columns:repeat(3,1fr)}.study-nav button{padding:7px 5px;font-size:11px}.masthead{grid-template-columns:1fr}.mast-info{max-width:none;display:flex;align-items:center;gap:20px;padding-top:10px}.mast-info .meta{margin:0}.mast-info strong{font-size:19px}.masthead h1{font-size:58px;line-height:.85}.mast-info br{display:none}.demo-label{margin-top:4px}.writing{padding:20px}.writing h2{font-size:36px;letter-spacing:-1.5px}.writing-top{gap:12px}.writing-top p{font-size:10px;max-width:74px;text-align:right}.draft{font-size:18px;min-height:0;line-height:1.5}.draft p+p{margin-top:18px}.writing-bottom{grid-template-columns:minmax(0,1fr) 104px;gap:14px}.review-button{width:104px;height:104px;font-size:19px}.writing-note{font-size:13px}.word-count{margin-top:18px}.word-count strong{font-size:25px}.voice-statement{font-size:27px}.rule-list{display:block}.rule-list li{padding:8px 0}.pack-body .source{padding-top:10px}.results-top{padding:18px 20px}.results-top h2{font-size:29px}.finding,.edited{padding:20px}.edited-top h3{font-size:22px}.edited-copy{font-size:17px}.square-button{padding:8px 12px;font-size:12px}.study-foot{font-size:10px;gap:12px}.study-foot p{max-width:220px}.view-heading h2{font-size:35px}.dividers{grid-template-columns:1fr;gap:12px}.divider{min-height:300px;padding:22px}.divider .chapter{font-size:94px;margin-top:15px}.divider h3{font-size:46px}.divider .series{font-size:10px}.role{display:block;padding:20px}.role-swatches{height:70px;min-height:0}.inventory-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.source-tag{font-size:11px}}
+@media(max-width:950px){.pack-toggle{grid-template-columns:1fr 24px;min-height:116px;padding:20px}.pack-title{font-size:42px;letter-spacing:-1.7px}.voice-statement{font-size:25px}}
+@media(max-width:760px){.pack-toggle{grid-template-columns:1fr 24px;min-height:105px;padding:18px 20px}.pack-title{font-size:40px;letter-spacing:-1.6px}.voice-statement{font-size:25px}.pack-body .pack-bottom{margin-top:14px}}
+@media(max-width:460px){.pack-toggle{min-height:100px}.pack-title{font-size:38px}.voice-statement{font-size:25px}}
+.divider .chapter{font-size:16px;line-height:1.2;letter-spacing:0;margin-top:22px}
+.brand-lockup{display:flex;align-items:center;gap:20px;min-width:0}
+.logo-replay{display:block;flex:0 0 72px;width:72px;height:72px;padding:0;border:0;background:transparent;color:var(--ink)}
+.logo-replay svg{display:block;width:100%;height:100%}
+.logo-replay:active{transform:none}
+@media(max-width:950px){.brand-lockup{gap:14px}.logo-replay{width:58px;height:58px;flex-basis:58px}.brand-lockup h1{font-size:clamp(42px,5.8vw,60px)}}
+@media(max-width:460px){.brand-lockup{gap:12px}.logo-replay{width:48px;height:48px;flex-basis:48px}.masthead .brand-lockup h1{font-size:clamp(35px,10.5vw,48px);letter-spacing:-2px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="study-bar">
+  <p class="study-label">Design study / your extracted palette</p>
+  <nav class="study-nav" aria-label="Design study views">
+    <button type="button" data-view="workspace" aria-pressed="true">Workspace</button>
+    <button type="button" data-view="pack" aria-pressed="false">Pack connection</button>
+    <button type="button" data-view="colour" aria-pressed="false">Colour decisions</button>
+  </nav>
+</div>
+<div class="shell">
+<header class="masthead">
+  <div class="brand-lockup"><button type="button" class="logo-replay" data-logo-replay="header-voice-logo" aria-label="Replay logo animation" title="Replay logo animation"><svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" id="header-voice-logo" data-voice-logo><path d="M18 17 L23 27 L28 37"/><path d="M32 45 L36 53 L40 61"/><path d="M44 69 L50 81 L56 69"/><path d="M60 61 L64 53 L68 45"/><path d="M72 37 L77 27 L82 17"/></svg></button><h1>Voice<br>Companion</h1></div>
+  <div class="mast-info"><strong>Alder <br>Studio</strong><div class="meta">Brand voice workspace<br><span class="demo-label">Fictional example</span></div></div>
+</header>
+<main>
+<section id="view-workspace" aria-label="Workspace concept">
+  <div class="work-grid">
+    <section class="writing" aria-labelledby="draft-heading">
+      <div class="writing-top"><h2 id="draft-heading">Your draft.</h2><p>Example copy<br>Read-only</p></div>
+      <div class="draft" id="draft">
+        <p>Alder Studio offers a <span id="flagged">best-in-class</span> brand voice workbook for £29.</p>
+        <p>Work through 12 exercises to put your voice into words. Your PDF is ready as soon as you pay.</p>
+        <p>We reply to support emails within two working days. Personal advice is not included.</p>
+      </div>
+      <div class="writing-bottom"><div><p class="writing-note">Review the words against your brand guidelines.</p><p class="word-count"><strong id="word-total"></strong> words in this example</p></div><button class="review-button" id="review-toggle" aria-expanded="false" aria-controls="review-results"><span id="review-label">Review<br>example</span><span class="arrow" aria-hidden="true">↗</span></button></div>
+    </section>
+    <aside class="reference" aria-label="Proposed sections from your pack">
+      <section class="pack-section is-open" data-section="voice">
+        <button class="pack-toggle" aria-expanded="true" aria-controls="voice-body"><span class="pack-title">Your<br>voice.</span><span class="pack-sign" aria-hidden="true">−</span></button>
+        <div class="pack-body" id="voice-body"><p class="source">From your voice kit / section 01</p><h2 class="voice-statement">Plain. <br>Warm. <br>Specific.</h2><ul class="rule-list"><li>Use everyday words.</li><li>Write as a person.</li><li>Let the details lead.</li></ul><p class="pack-bottom">Your agreed principles are the starting point for each review.</p></div>
+      </section>
+      <section class="pack-section" data-section="words">
+        <button class="pack-toggle" aria-expanded="false" aria-controls="words-body"><span class="pack-title">Your<br>words.</span><span class="pack-sign" aria-hidden="true">+</span></button>
+        <div class="pack-body" id="words-body" hidden><p class="source">From your voice kit / section 02</p><p class="word-example">best-in-class</p><p class="explanation">A phrase on this brand's avoid list. State what the product contains instead.</p><p class="pack-bottom">Yellow identifies vocabulary rules in the pack and their corresponding findings in the app.</p></div>
+      </section>
+      <section class="pack-section" data-section="examples">
+        <button class="pack-toggle" aria-expanded="false" aria-controls="examples-body"><span class="pack-title">In<br>practice.</span><span class="pack-sign" aria-hidden="true">+</span></button>
+        <div class="pack-body" id="examples-body" hidden><p class="source">From your voice kit / section 03</p><p class="example-quote">“12 exercises.<br>One clearer voice.”</p><p class="explanation">A short worked example using the brand's plain, specific voice.</p><p class="pack-bottom">Examples are references for style. They must not supply new facts to a draft.</p></div>
+      </section>
+    </aside>
+  </div>
+  <section id="review-results" class="review-results" hidden aria-labelledby="results-heading">
+    <div class="results-top"><h2 id="results-heading" tabindex="-1">One thing to review.</h2><button class="text-button" id="close-review">Close example</button></div>
+    <div class="review-columns">
+      <article class="finding"><div class="source-tag"><span>02</span>Your words</div><p class="check-kind">Rule match / example finding</p><h3>A phrase on your avoid list.</h3><p>“best-in-class” appears in your vocabulary rules. Remove it and let the product details do the work.</p></article>
+      <section class="edited" aria-labelledby="edited-heading"><div class="edited-top"><h3 id="edited-heading">Suggested edit</h3><button class="square-button" id="copy">Copy example ↗</button></div><div class="edited-copy" id="edited-copy"><p>Alder Studio offers a brand voice workbook for £29.</p><p>Work through 12 exercises to put your voice into words. Your PDF is ready as soon as you pay.</p><p>We reply to support emails within two working days. Personal advice is not included.</p></div><p class="review-note">Read through before use. <span id="copy-status" role="status" aria-live="polite"></span></p></section>
+    </div>
+  </section>
+</section>
+<section id="view-pack" hidden aria-labelledby="pack-heading">
+  <div class="view-heading"><h2 id="pack-heading">One system.<br>Across the pack and app.</h2><p>These are suggested section dividers, not finished pack designs. Their colour, number and name carry into the app.</p></div>
+  <div class="dividers">
+    <article class="divider"><p class="series">Voice Companion / section study</p><div class="chapter">01</div><h3>Your<br>voice.</h3><p>Define how your brand sounds.</p></article>
+    <article class="divider"><p class="series">Voice Companion / section study</p><div class="chapter">02</div><h3>Your<br>words.</h3><p>Choose what to use and avoid.</p></article>
+    <article class="divider"><p class="series">Voice Companion / section study</p><div class="chapter">03</div><h3>In<br>practice.</h3><p>See the voice in actual writing.</p></article>
+  </div>
+  <div class="pack-link"><strong>Follow the source.</strong><p>A yellow finding tagged “02 / Your words” leads back to the same named section in the pack. The number and wording still work without colour. The final sections should follow the pack's contents.</p></div>
+</section>
+<section id="view-colour" hidden aria-labelledby="colour-heading">
+  <div class="view-heading"><h2 id="colour-heading">Less colour.<br>More intention.</h2><p>Your palette has three useful families: mineral neutrals, greens and strong signals. This study gives each a job.</p></div>
+  <div class="colour-roles">
+    <article class="role"><div class="role-swatches" aria-label="Olive green and silver grey"><i style="background:#708166"></i><i style="background:#CCD0C8"></i></div><h3>The working surface.</h3><div class="hexes">#708166 #CCD0C8</div><p>Olive green frames the app. Silver grey carries the draft and revised copy. The reading area stays consistent.</p></article>
+    <article class="role"><div class="role-swatches" aria-label="Mint, yellow and coral"><i style="background:#6AA992"></i><i style="background:#F6DC19"></i><i style="background:#F25A38"></i></div><h3>The section identity.</h3><div class="hexes">#6AA992 #F6DC19 #F25A38</div><p>Mint for voice principles, yellow for vocabulary, coral for examples. Colour appears where the section is relevant.</p></article>
+    <article class="role"><div class="role-swatches" aria-label="Black and blue grey"><i style="background:#0D0D0D"></i><i style="background:#273240"></i></div><h3>The controls.</h3><div class="hexes">#0D0D0D #273240</div><p>Black anchors the typography and main action. Blue grey is a quiet secondary ink and hover colour.</p></article>
+  </div>
+  <details class="palette-inventory"><summary>Where all 15 supplied colours fit</summary><div class="inventory-grid">
+    <div class="colour-sample"><i style="background:#F6DC19"></i><p><strong>#F6DC19</strong>Selected: vocabulary section.</p></div>
+    <div class="colour-sample"><i style="background:#A6A29F"></i><p><strong>#A6A29F</strong>Reserve: neutral surround.</p></div>
+    <div class="colour-sample"><i style="background:#FB2A00"></i><p><strong>#FB2A00</strong>Alternative: sharper accent.</p></div>
+    <div class="colour-sample"><i style="background:#FC2E02"></i><p><strong>#FC2E02</strong>Close to #FB2A00. Keep one.</p></div>
+    <div class="colour-sample"><i style="background:#6AA992"></i><p><strong>#6AA992</strong>Selected: voice section.</p></div>
+    <div class="colour-sample"><i style="background:#708166"></i><p><strong>#708166</strong>Selected: green surround.</p></div>
+    <div class="colour-sample"><i style="background:#E4E2D1"></i><p><strong>#E4E2D1</strong>Limited to the small example label.</p></div>
+    <div class="colour-sample"><i style="background:#677163"></i><p><strong>#677163</strong>Reserve: small graphic areas.</p></div>
+    <div class="colour-sample"><i style="background:#0D0D0D"></i><p><strong>#0D0D0D</strong>Selected: text and controls.</p></div>
+    <div class="colour-sample"><i style="background:#273240"></i><p><strong>#273240</strong>Selected: secondary ink.</p></div>
+    <div class="colour-sample"><i style="background:#F25A38"></i><p><strong>#F25A38</strong>Selected: examples section.</p></div>
+    <div class="colour-sample"><i style="background:#EEC831"></i><p><strong>#EEC831</strong>Alternative: warmer yellow.</p></div>
+    <div class="colour-sample"><i style="background:#CCD0C8"></i><p><strong>#CCD0C8</strong>Selected: reading surface.</p></div>
+    <div class="colour-sample"><i style="background:#6A7366"></i><p><strong>#6A7366</strong>Close to #677163. Keep one.</p></div>
+    <div class="colour-sample"><i style="background:#F65619"></i><p><strong>#F65619</strong>Alternative: more orange.</p></div>
+  </div></details>
+  <p class="cream-note">The cream is a small annotation colour only. It is not the canvas, the writing surface or a section colour. These screen colours still need a print proof before they are used in a physical pack.</p>
+</section>
+</main>
+<footer class="study-foot"><p>Visual study with fixed example content. No AI request is made.<br>Pack sections are provisional. The live app has not changed.</p><div class="swatches" aria-label="Mint voice, yellow vocabulary and coral examples"><i></i><i></i><i></i></div></footer>
+</div>
+<script>
+const byId=id=>document.getElementById(id);
+const viewButtons=[...document.querySelectorAll('[data-view]')];
+viewButtons.forEach(button=>button.addEventListener('click',()=>{
+  const selected=button.dataset.view;
+  viewButtons.forEach(item=>{const active=item===button;item.setAttribute('aria-pressed',String(active));byId('view-'+item.dataset.view).hidden=!active;});
+}));
+document.querySelectorAll('.pack-toggle').forEach(button=>button.addEventListener('click',()=>{
+  const opening=button.getAttribute('aria-expanded')!=='true';
+  document.querySelectorAll('.pack-toggle').forEach(item=>{
+    const active=item===button&&opening;
+    item.setAttribute('aria-expanded',String(active));
+    item.querySelector('.pack-sign').textContent=active?'−':'+';
+    byId(item.getAttribute('aria-controls')).hidden=!active;
+    item.closest('.pack-section').classList.toggle('is-open',active);
+  });
+}));
+const reviewButton=byId('review-toggle');
+const originalFlag=byId('flagged');
+byId('word-total').textContent=byId('draft').textContent.trim().split(/\s+/).length;
+function setReview(open){
+  byId('review-results').hidden=!open;
+  reviewButton.setAttribute('aria-expanded',String(open));
+  byId('review-label').innerHTML=open?'Close<br>review':'Review<br>example';
+  if(open){originalFlag.innerHTML='<mark>best-in-class</mark>';byId('results-heading').focus({preventScroll:true});byId('review-results').scrollIntoView({block:'nearest',behavior:'instant'});}
+  else{originalFlag.textContent='best-in-class';reviewButton.focus({preventScroll:true});}
+}
+reviewButton.addEventListener('click',()=>setReview(byId('review-results').hidden));
+byId('close-review').addEventListener('click',()=>setReview(false));
+byId('copy').addEventListener('click',async()=>{
+  const content=[...document.querySelectorAll('#edited-copy p')].map(p=>p.textContent).join('\n\n');
+  try{await navigator.clipboard.writeText(content);byId('copy-status').textContent='Copied.';}
+  catch{const range=document.createRange();range.selectNodeContents(byId('edited-copy'));const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);byId('copy-status').textContent='Text selected. Press Ctrl+C to copy.';}
+});
+</script>
+<script src="Voice-Companion-logo-motion.js"></script>
+</body>
+</html>

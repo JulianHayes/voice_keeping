@@ -1,126 +1,81 @@
-# Product
+# VoiceKeeping
 
-## Register
+**Help UK SMEs develop their brand voice and turn it into usable guidelines. The current focus is tier 1.**
 
-product
+VoiceKeeping is the chosen name. The three-tier direction below was recorded from Julian's instructions on 28 September 2026. Buyer demand and willingness to pay remain unproven.
 
-## Users
+## Product direction
 
-**Primary: the person briefing a copywriter.** A brand owner, comms lead or
-agency account lead who has a draft, or a rough idea of one, and needs to hand
-a writer something better than "make it sound like us". They are not the author.
-They are the person who decides what the author should go and do.
+| Tier | Offer | Payment model | Status |
+|---|---|---|---|
+| 1 | A tool to develop brand voice guidelines, with the finished guidelines supplied as a PDF. | One-off fee. | Current focus. |
+| 2 | Add those guidelines to a copy amendment tool that checks drafts and suggests changes to match the new brand voice, like a writing linter. | Subscription. | Planned later. |
+| 3 | Translate marketing collateral into French, German and Spanish, with attention to the brand voice, context and cultural meaning. | Premium fee. Billing basis is undecided. | Planned later. |
 
-Their context: mid-task, under time pressure, with a draft in one hand and a
-writer or an agency waiting. They want the weak points found and named fast,
-with enough substance that the writer can act on it without a meeting.
+The guidelines developed in tier 1 are intended to carry through into tier 2. Exact prices, tier 3 packaging and the final buyer definition remain undecided.
 
-**Secondary: the copywriter receiving the output.** They read it as a brief, not
-as a correction. It has to tell them what to go and find, not just what to
-delete.
+## Model direction
 
-**Explicitly not a user: legal or compliance sign-off.** The tool hands off to
-them. It never stands in for them. A reviewer may read the output as a heads-up,
-but the product is not built for their workflow and must never imply their
-approval.
+Julian's stated plan is to use a Mistral model for tiers 2 and 3. Cost, contextual understanding and cultural understanding are the reasons for that choice. These are selection criteria and expectations, not verified performance findings. The exact Mistral model has not been selected or tested for these tasks.
 
-## Product Purpose
+The model for tier 1 remains undecided. The existing local copy amendment prototype still uses Gemini.
 
-Voice Governor is a springboard for copy creation, built on claimable evidence.
+## Current scope
 
-It takes a draft and returns a starting point: where the language is doing no
-work, where a claim is made with nothing behind it, and where a phrase carries
-UK regulatory risk with the source of that risk named. The output is a brief
-for a human writer.
+Focus on tier 1: developing brand voice guidelines and delivering the PDF for a one-off fee. Tiers 2 and 3 remain recorded future work. The existing copy amendment prototype is retained as work towards tier 2.
 
-It does not write the copy. It does not clear the copy.
+**Assumption to validate:** French, German and Spanish are priority translation needs for the intended UK SME customers. Julian identified these languages, but customer demand and target countries or regional variants have not been researched here.
 
-What success looks like:
-- A copywriter can start work from the output without asking a follow-up question.
-- Every flagged claim comes with what evidence would make it claimable.
-- Legal still signs off, and the tool has made that conversation shorter.
+The tier 1 questions, development process and PDF contents still need to be defined. This direction note does not establish that tier 1 is already implemented.
 
-What failure looks like:
-- Someone ships copy because the tool said the score was high enough.
-- Someone treats a clean screen as legal clearance.
-- The output reads as a list of deletions, so the writer learns nothing.
+## Existing copy amendment prototype
 
-## Brand Personality
+The following describes the current local implementation, which is closest to tier 2.
 
-**[ASSUMED - not yet confirmed by Julian. Strike anything wrong.]**
+1. Create a plain-language profile covering audience, 3 to 5 voice principles, good and poor examples, words to avoid and preferred wording.
+2. Confirm the rules in the form. Export a reusable profile file.
+3. Import a profile into the same form and confirm it before use. All rules replace the prior profile, including empty lists.
+4. Paste up to 5,000 characters.
+5. Review quoted passages with the customer's rule, an explanation and a proposed action.
+6. Choose edits. Copy or download one suggested draft after reading it.
 
-Exact, unhurried, accountable. The interface behaves like a working document
-rather than a verdict: it shows what it found, says how sure it is, cites where
-the rule comes from, and leaves the decision with the person reading.
+One brand at a time. UK or US English. No account, database, profile library or document ingestion.
 
-Dry, not cold. It is allowed to be direct about a weak claim. It is not allowed
-to be pleased with itself, and it does not congratulate the user.
+## What the existing prototype promises
 
-## Anti-references
+**Rule match** means an exact local phrase match, ignoring case. It does not mean the phrase is wrong in every context.
 
-**[ASSUMED except where marked confirmed. Strike anything wrong.]**
+**Tone suggestion** means a model judgement linked to a customer rule. It can be declined.
 
-- **Brand Schema's own identity. [Confirmed: separation principle, 25 JUL 2026.]**
-  The reviewer must never carry Brand Schema's doctrine as its own standard, or
-  wear its typography or Signal red. Each customer's rules are the standard. The
-  product's own voice lives only in how it presents itself.
-- **Anything that implies legal clearance. [Confirmed: Julian, this session.]**
-  No green ticks that read as "approved", no language of passing or failing a
-  legal test, no certificate, no badge.
-- **[ASSUMED] The red compliance reflex.** Red for a red-flag tool is the first
-  answer the training data gives. The product's whole argument is about not
-  sounding like your category, so looking exactly like your category is a
-  self-inflicted wound. Open question: dropping red means a real repalette.
-- **[ASSUMED] Consumer writing assistants (Grammarly, Hemingway).** Encouraging
-  scores, streaks, cheerful cards, a grade that goes up when you comply.
-- **[ASSUMED] Generic SaaS dashboard.** Metric tiles, a score gauge as the hero,
-  identical card grids, gradient accents.
+**Needs your decision** means wording or evidence requires human attention. Some model edits are withheld by conservative factual checks.
 
-## Design Principles
+The customer's principles determine the review. There are no imposed copywriter styles, global exclamation-mark bans, governance scores or clearance badges.
 
-1. **An indicator, not a verdict.** Julian, 20 SEP 2026: "It's not a hard
-   verdict. It's part of an often iterative process in copy development. It's
-   an indicator of the challenges a piece of copy might face unless it is
-   reworked." Every label reads forward, towards the rework, and none of them
-   rules on the copy as it stands.
-2. **Name the evidence that would fix it.** A finding that only says "cut this"
-   has failed. It has to say what figure, source or artefact would make the
-   claim usable.
-3. **The human is the author.** The tool never presents its rewrite as finished
-   copy. Anything it generates is labelled as raw material.
-4. **Screening is not sign-off.** The disclaimer is load-bearing, not legal
-   boilerplate. It survives every redesign and it is never tucked into a footer
-   nobody reads.
-5. **State the confidence.** Where a judgement is a pattern match rather than a
-   certainty, the interface says so on the record.
+## Facts and failures
 
-## Accessibility & Inclusion
+The original draft remains visible and unchanged. A suggested version is assembled only from traceable edits to that draft.
 
-WCAG 2.2 AA, measured rather than estimated.
+Checks withhold changes to recognised factual patterns and names. These are incomplete and sometimes overly cautious. They do not establish truth, prove evidence or guarantee unchanged meaning. Names, prices, quantities, timing, conditions, exclusions and all claims still need human review.
 
-- Every text and background pair computed at 4.5:1 or better, in both themes.
-  Verified 20 SEP 2026.
-- Non-text marks, dots, bars and rules, meet 3:1.
-- `prefers-reduced-motion` shows the finished state. No entrance animation plays.
-- Theme follows the operating system by default and remembers an explicit choice.
-- Severity is never carried by colour alone. The word sits beside the mark.
-- Interactive targets 24px minimum, 44px on touch.
+An unsupported claim must not be replaced with invented evidence. The prompt requires a decision note where evidence is missing.
 
-## Open tensions
+Missing credentials, network or provider errors, timeouts and malformed output show rewriting as unavailable. Valid local findings remain. No stored marketing copy is substituted.
 
-Recorded, not resolved. These change the design if they move.
+## Design
 
-1. **Model prompt still instructs compliance.** Resolved in the interface,
-   open in the engine. `server.js` tells the model to "fix ALL governance and
-   regulatory breaches", to "directly resolve every regulatory breach", and to
-   return "3 compliant rewritten versions" (lines 300, 327, 406). Aiming a
-   rewrite at the flags is useful. Asserting the result is compliant is the
-   same overclaim the interface just dropped. Awaiting Julian's call, because
-   changing it changes model output, not just wording.
-2. **Commercial position.** Whether this is free and feeds the paid Brand Schema
-   Audit, sold on its own, or internal only. Unanswered, and it decides whether
-   the interface should expose the limit of what a screen can judge.
-3. **The red palette.** See anti-references.
-4. **README is stale.** It still describes a single HTML file with no build step
-   and no dependencies. There is now an Express server, a Gemini call and a
-   package manifest.
+Use readable body text, clear labels, visible keyboard focus, strong typography and a large draft area. A substantial black circular review control is part of the current direction. The five lines stay vertical and move into a V arrangement once on opening. Reduced motion shows the fixed V.
+
+Julian is reviewing a revised colour study based on the kit. Final section colours and the pack-to-app mapping remain unsettled. Keep those choices separate from functional status and action colours. The working interface uses neutral surfaces while that direction is reviewed.
+
+## Evidence for the existing prototype
+
+[REVIEW.md](REVIEW.md) records the copy amendment prototype's checks and their limits. These checks do not establish completion of tier 1 or tier 3. Mocked response handling is not evidence that Gemini has produced useful real reviews. Real provider validation remains necessary.
+
+## What I have not addressed
+
+- The tier 1 development process, finished PDF guidelines, cleared product name, proven buyer demand or a final visual identity.
+- Exact prices, tier 3 packaging, translation demand, regional language variants or Mistral model evaluation.
+- Customer access, billing, usage allowances and cost enforcement.
+- A full privacy, security, provider-retention or accessibility audit.
+- Team workflows, several brands, long documents or regulatory screening.
+- Public launch, pricing, promotion or the unproven income target.

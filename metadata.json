@@ -1,6 +1,6 @@
 {
-  "name": "Voice Governor",
-  "description": "Adaptive brand voice governance and regulatory compliance screening with customizable brand tone of voice guidelines ingestion.",
+  "name": "VoiceKeeping",
+  "description": "Apply your own brand voice to short drafts, with traceable suggestions and human review.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
